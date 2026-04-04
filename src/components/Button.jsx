@@ -19,7 +19,7 @@ export default function Button({
     <motion.button
       whileHover={{ scale: 1.03, y: -1 }}
       whileTap={{ scale: 0.97 }}
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-display text-sm font-black uppercase tracking-[0.08em] ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-4 py-3 text-center font-display text-xs font-black uppercase tracking-[0.08em] sm:px-5 sm:text-sm ${variants[variant]} ${className}`}
       {...props}
     >
       {icon ? <span>{icon}</span> : null}

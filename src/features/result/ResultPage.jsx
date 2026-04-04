@@ -102,12 +102,12 @@ export default function ResultPage() {
         type="button"
         whileHover={{ rotate: 18, scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
-        className="absolute right-4 top-5 z-20 grid h-14 w-14 place-items-center rounded-full bg-white/18 text-2xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8"
+        className="absolute right-4 top-4 z-20 grid h-12 w-12 place-items-center rounded-full bg-white/18 text-xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8 sm:top-5 sm:h-14 sm:w-14 sm:text-2xl"
       >
         ⚙
       </motion.button>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-8 sm:px-6">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 sm:py-8">
         <section className="mx-auto w-full max-w-4xl text-center text-white">
           <AnimatePresence mode="wait">
             <motion.div
@@ -116,7 +116,7 @@ export default function ResultPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <p className="text-stroke-title text-4xl font-black uppercase sm:text-5xl">
+              <p className="text-stroke-title text-2xl font-black uppercase sm:text-4xl md:text-5xl">
                 {isDiscussionPhase
                   ? "Discuss And Find The Imposter"
                   : isEliminationPhase
@@ -125,7 +125,7 @@ export default function ResultPage() {
                       ? "Crew Victory"
                       : "Imposter Victory"}
               </p>
-              <h1 className="hero-title mt-5 font-display text-6xl font-black uppercase leading-[0.84] sm:text-8xl">
+              <h1 className="hero-title mt-4 font-display text-5xl font-black uppercase leading-[0.84] sm:text-6xl md:text-8xl">
                 {isDiscussionPhase ? (
                   <>
                     Time To
@@ -148,7 +148,7 @@ export default function ResultPage() {
                   </>
                 )}
               </h1>
-              <p className="mx-auto mt-5 max-w-2xl text-base font-semibold text-white/90 sm:text-lg">
+              <p className="mx-auto mt-4 max-w-2xl px-2 text-sm font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg">
                 {isDiscussionPhase
                   ? "Everyone has seen their card. Compare clues, catch the bluff, and make the imposter sweat."
                   : isEliminationPhase
@@ -161,7 +161,7 @@ export default function ResultPage() {
           </AnimatePresence>
         </section>
 
-        <div className="mx-auto mt-10 grid w-full max-w-5xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="mx-auto mt-8 grid w-full max-w-5xl gap-5 sm:gap-6 lg:mt-10 lg:grid-cols-[1.05fr_0.95fr]">
           <motion.section
             className="glass-panel screen-glow relative overflow-hidden p-5 sm:p-6"
             initial={{ opacity: 0, y: 26 }}
@@ -171,7 +171,7 @@ export default function ResultPage() {
             <div className="panel-sheen" />
             <div className={`rounded-[1.8rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-6 text-white shadow-[0_18px_36px_rgba(120,52,188,0.18)]`}>
               <p className="text-sm font-bold uppercase tracking-[0.3em] text-white/75">Category</p>
-              <h2 className="mt-3 font-display text-4xl font-black uppercase">{meta.selectedCategory.label}</h2>
+              <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">{meta.selectedCategory.label}</h2>
               <p className="mt-4 max-w-md text-sm text-white/85">{meta.selectedCategory.description}</p>
             </div>
 
@@ -201,7 +201,7 @@ export default function ResultPage() {
                     } ${isEliminating && state.eliminationTargetId === player.id ? "blur-0" : isEliminating ? "blur-[2px]" : ""}`}
                   >
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#9d84ae]">Player {String.fromCharCode(65 + index)}</p>
-                    <p className={`mt-2 font-display text-2xl font-black uppercase ${player.isAlive === false ? "line-through" : ""} text-[#2c216d]`}>
+                    <p className={`mt-2 break-words font-display text-xl font-black uppercase sm:text-2xl ${player.isAlive === false ? "line-through" : ""} text-[#2c216d]`}>
                       {player.name}
                     </p>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8b6ea0]">
@@ -227,7 +227,7 @@ export default function ResultPage() {
               </p>
               <div className="mt-4 flex items-end justify-between gap-4">
                 <div>
-                  <h3 className="font-display text-5xl font-black uppercase text-[#2c216d]">
+                  <h3 className="font-display text-3xl font-black uppercase text-[#2c216d] sm:text-5xl">
                     {isDiscussionPhase
                       ? state.timerEnabled
                         ? formatTime(timeLeft)

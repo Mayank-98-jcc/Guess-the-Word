@@ -64,19 +64,19 @@ export default function SetupPage() {
         transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <motion.button
           type="button"
           whileHover={{ rotate: 18, scale: 1.06 }}
           whileTap={{ scale: 0.94 }}
-          className="absolute right-4 top-5 z-20 grid h-14 w-14 place-items-center rounded-full bg-white/18 text-2xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8"
+          className="absolute right-4 top-4 z-20 grid h-12 w-12 place-items-center rounded-full bg-white/18 text-xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8 sm:top-5 sm:h-14 sm:w-14 sm:text-2xl"
         >
           ⚙
         </motion.button>
 
         <section className="mx-auto w-full max-w-4xl text-center">
           <motion.p
-            className="text-stroke-title text-4xl font-black uppercase text-white sm:text-5xl"
+            className="text-stroke-title text-2xl font-black uppercase text-white sm:text-4xl md:text-5xl"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
@@ -84,7 +84,7 @@ export default function SetupPage() {
             Play With Friends
           </motion.p>
           <motion.h1
-            className="hero-title mt-4 font-display text-6xl font-black uppercase leading-[0.84] text-white sm:text-8xl"
+            className="hero-title mt-4 font-display text-5xl font-black uppercase leading-[0.84] text-white sm:text-6xl md:text-8xl"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.14, duration: 0.45 }}
@@ -93,7 +93,7 @@ export default function SetupPage() {
             <span className="block">Who?</span>
           </motion.h1>
           <motion.p
-            className="mx-auto mt-5 max-w-xl text-base font-semibold text-white/90 sm:text-lg"
+            className="mx-auto mt-4 max-w-xl px-2 text-sm font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -102,7 +102,7 @@ export default function SetupPage() {
           </motion.p>
         </section>
 
-        <div className="mx-auto mt-10 grid w-full max-w-5xl gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="mx-auto mt-8 grid w-full max-w-5xl gap-5 sm:gap-6 lg:mt-10 lg:grid-cols-[0.92fr_1.08fr]">
           <motion.section
             className="glass-panel glass-panel-strong screen-glow relative overflow-hidden p-5 sm:p-6"
             initial={{ opacity: 0, y: 28 }}
@@ -110,35 +110,35 @@ export default function SetupPage() {
             transition={{ delay: 0.24, duration: 0.45 }}
           >
             <div className="panel-sheen" />
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-500">Players</p>
-                <h2 className="mt-1 font-display text-3xl font-black uppercase text-[#4d2455]">Build the party</h2>
+                <h2 className="mt-1 font-display text-2xl font-black uppercase text-[#4d2455] sm:text-3xl">Build the party</h2>
               </div>
-              <div className="rounded-full bg-white/65 px-4 py-2 text-sm font-black uppercase text-[#87506b] shadow-[0_8px_20px_rgba(132,52,162,0.12)]">
+              <div className="rounded-full bg-white/65 px-3 py-2 text-xs font-black uppercase text-[#87506b] shadow-[0_8px_20px_rgba(132,52,162,0.12)] sm:px-4 sm:text-sm">
                 {state.players.length} joined
               </div>
             </div>
 
-            <form className="mt-5 flex gap-3" onSubmit={handleAddPlayer}>
+            <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleAddPlayer}>
               <input
                 value={playerName}
                 onChange={(event) => setPlayerName(event.target.value)}
                 placeholder="Enter player name"
                 className="min-w-0 flex-1 rounded-full border border-white/70 bg-white/50 px-5 py-3 text-base font-semibold text-[#5c345e] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] outline-none backdrop-blur-md placeholder:text-[#8e6c98] focus:border-white"
               />
-              <Button type="submit" className="min-w-[96px]">Add</Button>
+              <Button type="submit" className="w-full sm:min-w-[96px] sm:w-auto">Add</Button>
             </form>
 
             <div className="frosted-inner mt-5 rounded-[1.75rem] p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-[#936486]">Crew List</p>
-                <span className="text-sm font-semibold text-[#8d6d90]">Need at least 3 players</span>
+                <span className="text-xs font-semibold text-[#8d6d90] sm:text-sm">Need at least 3 players</span>
               </div>
               <div className="mt-4 flex min-h-24 flex-wrap gap-3">
                 <AnimatePresence>
                   {state.players.length ? (
-                    <div className="flex flex-wrap items-start gap-4">
+                    <div className="flex flex-wrap items-start gap-3 sm:gap-4">
                       {state.players.map((player, index) => (
                         <motion.div
                           key={player.id}
@@ -185,10 +185,10 @@ export default function SetupPage() {
 
             <div className="mt-5 space-y-4">
               <div className="frosted-inner rounded-[1.75rem] p-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#936486]">Imposters</p>
-                    <h3 className="mt-2 font-display text-2xl font-black uppercase text-[#4d2455]">
+                    <h3 className="mt-2 font-display text-xl font-black uppercase text-[#4d2455] sm:text-2xl">
                       {state.imposterCount} {state.imposterCount === 1 ? "Imposter" : "Imposters"}
                     </h3>
                   </div>
@@ -215,7 +215,7 @@ export default function SetupPage() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#936486]">Time Limit</p>
-                    <h3 className="mt-2 font-display text-2xl font-black uppercase text-[#4d2455]">
+                    <h3 className="mt-2 font-display text-xl font-black uppercase text-[#4d2455] sm:text-2xl">
                       {state.timerEnabled ? `${Math.floor(state.timerSeconds / 60)} min` : "Disabled"}
                     </h3>
                   </div>
@@ -262,7 +262,7 @@ export default function SetupPage() {
               type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="mt-6 w-full py-4 text-xl disabled:opacity-50"
+              className="mt-6 w-full py-4 text-base sm:text-xl disabled:opacity-50"
               icon="▶"
             >
               Start Game
@@ -282,7 +282,7 @@ export default function SetupPage() {
                   <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-500">Categories</p>
                   <div className="mt-3 flex items-end justify-between gap-3">
                     <div>
-                      <h2 className="font-display text-3xl font-black uppercase text-[#4d2455]">Pick the category</h2>
+                      <h2 className="font-display text-2xl font-black uppercase text-[#4d2455] sm:text-3xl">Pick the category</h2>
                       <p className="mt-2 text-sm font-medium text-[#835e85]">
                         Choose category for the round. Every crewmate gets the same word.
                       </p>

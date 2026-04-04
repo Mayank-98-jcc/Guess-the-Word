@@ -21,8 +21,13 @@ body {
   @apply min-h-screen;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 button {
   @apply transition duration-200 ease-out;
+  touch-action: manipulation;
 }
 
 ::selection {
@@ -207,6 +212,7 @@ button {
 .reveal-card-inner {
   position: relative;
   height: 100%;
+  width: 100%;
   border-radius: 1.9rem;
   background:
     linear-gradient(180deg, rgba(255,255,255,1), rgba(255,246,250,0.98));
@@ -226,6 +232,27 @@ button {
     0 0 0 2px rgba(255,214,152,0.28),
     0 14px 32px rgba(126, 37, 174, 0.26),
     0 0 26px rgba(255, 166, 78, 0.34);
+}
+
+@media (max-width: 640px) {
+  .sparkle-field,
+  .reveal-stars {
+    opacity: 0.42;
+  }
+
+  .orb,
+  .reveal-ribbon {
+    opacity: 0.4;
+  }
+
+  .glass-panel,
+  .reveal-card-shell {
+    border-radius: 1.5rem;
+  }
+
+  .reveal-card-inner {
+    border-radius: 1.25rem;
+  }
 }
 
 @keyframes gradientShift {

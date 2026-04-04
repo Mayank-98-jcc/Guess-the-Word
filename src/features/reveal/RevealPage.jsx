@@ -88,18 +88,18 @@ export default function RevealPage() {
         transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-8 sm:px-6">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
         <div className="text-center text-white">
-          <p className="text-stroke-title text-4xl font-black uppercase sm:text-5xl">
+          <p className="text-stroke-title text-2xl font-black uppercase sm:text-4xl md:text-5xl">
             {player.role === "IMPOSTER" ? "One Imposter" : "One Secret Word"}
           </p>
-          <h1 className="hero-title mt-5 font-display text-6xl font-black uppercase leading-[0.84] sm:text-7xl">
+          <h1 className="hero-title mt-4 font-display text-5xl font-black uppercase leading-[0.84] sm:text-6xl md:text-7xl">
             Imposter
             <span className="block">Who?</span>
           </h1>
         </div>
 
-        <div className="mt-4 flex flex-1 flex-col items-center justify-center">
+        <div className="mt-3 flex w-full flex-1 flex-col items-center justify-center">
           <AnimatePresence mode="wait">
             {showPassScreen ? (
               <motion.section
@@ -109,10 +109,10 @@ export default function RevealPage() {
                 exit={{ opacity: 0, scale: 0.96 }}
                 className="w-full text-center"
               >
-                <p className="mb-6 text-sm font-bold uppercase tracking-[0.4em] text-white/80">
+                <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
-                <div className="reveal-card-shell mx-auto w-[min(88vw,28rem)] min-w-[20rem] max-w-none p-3 sm:min-w-[24rem]">
+                <div className="reveal-card-shell mx-auto w-full max-w-[28rem] p-3">
                   <div className="panel-sheen" />
                   <div className="reveal-card-inner flex min-h-[24rem] flex-col items-center justify-center px-8 text-center">
                     <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Pass The Phone</p>
@@ -140,7 +140,7 @@ export default function RevealPage() {
                 exit={{ opacity: 0, y: -18 }}
                 className="w-full text-center"
               >
-                <p className="mb-5 text-sm font-bold uppercase tracking-[0.4em] text-white/80">
+                <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
                 <RevealCard
@@ -156,7 +156,7 @@ export default function RevealPage() {
                       initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="mx-auto mt-6 w-[min(88vw,28rem)] max-w-none"
+                      className="mx-auto mt-6 w-full max-w-[28rem]"
                     >
                       <Button type="button" onClick={handleContinue} className="reveal-bottom-glow w-full">
                         {state.currentPlayerIndex === state.players.length - 1 ? "Start Discussion" : "Pass To Next Player"}

@@ -7,7 +7,7 @@ export default function RevealCard({ player, word, hint, isRevealed, onReveal })
     <motion.button
       type="button"
       onClick={onReveal}
-      className="relative mx-auto block h-[24rem] w-full max-w-[25rem] [perspective:1200px] sm:h-[26rem]"
+      className="relative mx-auto block h-[26rem] w-[min(88vw,28rem)] min-w-[20rem] max-w-none [perspective:1200px] sm:h-[28rem] sm:min-w-[24rem]"
       whileTap={{ scale: isRevealed ? 1 : 0.98 }}
     >
       <motion.div
@@ -18,9 +18,11 @@ export default function RevealCard({ player, word, hint, isRevealed, onReveal })
         <div className="card-face absolute inset-0 p-2">
           <div className="reveal-card-shell h-full w-full p-3">
             <div className="panel-sheen" />
-            <div className="reveal-card-inner flex h-full flex-col items-center justify-center px-8 text-center">
+            <div className="reveal-card-inner flex h-full w-full flex-col items-center justify-center px-8 text-center">
               <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Private Reveal</p>
-              <h3 className="mt-5 font-display text-4xl font-black uppercase text-[#2c216d] sm:text-5xl">{player?.name}</h3>
+              <h3 className="mt-5 max-w-full text-center font-display text-4xl font-black uppercase text-[#2c216d] sm:text-5xl">
+                {player?.name}
+              </h3>
               <p className="reveal-pill mt-7 rounded-full bg-[#2d216d] px-7 py-3 font-display text-sm font-black uppercase tracking-[0.28em] text-white">
                 Tap To Reveal
               </p>
@@ -38,16 +40,18 @@ export default function RevealCard({ player, word, hint, isRevealed, onReveal })
         >
           <div className="reveal-card-shell h-full w-full p-3">
             <div className="panel-sheen" />
-            <div className="reveal-card-inner flex h-full flex-col items-center justify-center px-8 text-center">
+            <div className="reveal-card-inner flex h-full w-full flex-col items-center justify-center px-8 text-center">
               <motion.div
                 initial={{ opacity: 0, filter: "blur(10px)", scale: 0.92 }}
                 animate={isRevealed ? { opacity: 1, filter: "blur(0px)", scale: 1 } : {}}
                 transition={{ delay: 0.2, duration: 0.35 }}
-                className="flex flex-col items-center"
+                className="flex w-full flex-col items-center"
               >
                 <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Secret Role</p>
-                <h3 className="mt-5 font-display text-4xl font-black uppercase text-[#2c216d] sm:text-5xl">{player?.name}</h3>
-                <div className="mt-8 rounded-[1.6rem] bg-white px-8 py-5 shadow-[0_18px_35px_rgba(75,37,128,0.14)]">
+                <h3 className="mt-5 max-w-full text-center font-display text-4xl font-black uppercase text-[#2c216d] sm:text-5xl">
+                  {player?.name}
+                </h3>
+                <div className="mt-8 w-full max-w-[18rem] rounded-[1.6rem] bg-white px-8 py-5 shadow-[0_18px_35px_rgba(75,37,128,0.14)]">
                   {isImposter ? (
                     <div>
                       <p className="text-base font-black uppercase tracking-[0.18em] text-[#e05699]">You Are The</p>

@@ -8,7 +8,7 @@ export default function Modal({ isOpen, title, children, footer }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-md"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[#140b23]/78 px-4 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

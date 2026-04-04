@@ -369,11 +369,12 @@ export default function ResultPage() {
       <AnimatePresence>
         {(isEliminating || showEliminationReveal) && eliminatedPlayer ? (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/68 px-4 backdrop-blur-md"
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-[#06030d] px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_38%)]" />
             <motion.div
               initial={{ scale: 0.8, opacity: 0.4 }}
               animate={
@@ -386,12 +387,12 @@ export default function ResultPage() {
                   ? { duration: 1.2, times: [0, 0.35, 1] }
                   : { duration: 0.35, ease: "easeOut" }
               }
-              className="reveal-card-shell w-full max-w-md p-3"
+              className="reveal-card-shell relative z-10 w-full max-w-xl p-3"
             >
               <div className="panel-sheen" />
-              <div className="reveal-card-inner px-8 py-10 text-center">
-                <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Eliminated Player</p>
-                <h3 className="mt-5 font-display text-5xl font-black uppercase text-[#2c216d]">
+              <div className="reveal-card-inner px-8 py-10 text-center sm:px-10 sm:py-12">
+                <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#694f83]">Eliminated Player</p>
+                <h3 className="mt-5 font-display text-5xl font-black uppercase text-[#24195f] sm:text-6xl">
                   {eliminatedPlayer.name}
                 </h3>
                 <AnimatePresence mode="wait">
@@ -402,18 +403,18 @@ export default function ResultPage() {
                       animate={{ opacity: 1, scale: [0.92, 1.08, 1], y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.6, times: [0, 0.6, 1] }}
-                      className="mt-8"
+                      className="mt-8 flex flex-col items-center"
                     >
                       <p
-                        className={`font-display text-5xl font-black uppercase ${
-                          state.eliminationResult === "IMPOSTER_ELIMINATED" ? "text-rose-500" : "text-amber-500"
+                        className={`max-w-[12ch] text-center font-display text-4xl font-black uppercase leading-[0.95] drop-shadow-[0_4px_18px_rgba(255,255,255,0.18)] sm:text-6xl ${
+                          state.eliminationResult === "IMPOSTER_ELIMINATED" ? "text-[#d61f72]" : "text-[#d97706]"
                         }`}
                       >
                         {state.eliminationResult === "IMPOSTER_ELIMINATED"
                           ? "Imposter Eliminated"
                           : "Innocent Eliminated"}
                       </p>
-                      <p className="mt-5 text-sm font-medium text-[#715d85]">
+                      <p className="mt-5 max-w-md text-center text-sm font-semibold text-[#5f4a73] sm:text-base">
                         {state.eliminationResult === "IMPOSTER_ELIMINATED"
                           ? "The room got it right. The imposter is out."
                           : "The vote was wrong. Tension rises for the next round."}
@@ -426,12 +427,16 @@ export default function ResultPage() {
                               setShowEliminationReveal(false);
                               setShowAnswer(true);
                             }}
-                            className="reveal-bottom-glow w-full"
+                            className="reveal-bottom-glow w-full min-w-[18rem]"
                           >
                             Reveal Final Answer
                           </Button>
                         ) : (
-                          <Button type="button" onClick={actions.acknowledgeElimination} className="reveal-bottom-glow w-full">
+                          <Button
+                            type="button"
+                            onClick={actions.acknowledgeElimination}
+                            className="reveal-bottom-glow w-full min-w-[18rem]"
+                          >
                             Next Round
                           </Button>
                         )}
@@ -445,8 +450,8 @@ export default function ResultPage() {
                       transition={{ duration: 0.85, repeat: Number.POSITIVE_INFINITY }}
                       className="mt-8"
                     >
-                      <p className="font-display text-4xl font-black uppercase text-[#2c216d]">Judgement...</p>
-                      <p className="mt-4 text-sm font-medium text-[#715d85]">The room goes silent before the reveal.</p>
+                      <p className="font-display text-4xl font-black uppercase text-[#24195f]">Judgement...</p>
+                      <p className="mt-4 text-sm font-semibold text-[#5f4a73]">The room goes silent before the reveal.</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

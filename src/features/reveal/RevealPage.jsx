@@ -107,12 +107,12 @@ export default function RevealPage() {
                 initial={{ opacity: 0, scale: 0.94 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
-                className="w-full max-w-[26rem] text-center"
+                className="w-full text-center"
               >
                 <p className="mb-6 text-sm font-bold uppercase tracking-[0.4em] text-white/80">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
-                <div className="reveal-card-shell mx-auto p-3">
+                <div className="reveal-card-shell mx-auto w-[min(88vw,28rem)] min-w-[20rem] max-w-none p-3 sm:min-w-[24rem]">
                   <div className="panel-sheen" />
                   <div className="reveal-card-inner flex min-h-[24rem] flex-col items-center justify-center px-8 text-center">
                     <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Pass The Phone</p>
@@ -156,7 +156,7 @@ export default function RevealPage() {
                       initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="mx-auto mt-6 max-w-[25rem]"
+                      className="mx-auto mt-6 w-[min(88vw,28rem)] max-w-none"
                     >
                       <Button type="button" onClick={handleContinue} className="reveal-bottom-glow w-full">
                         {state.currentPlayerIndex === state.players.length - 1 ? "Start Discussion" : "Pass To Next Player"}

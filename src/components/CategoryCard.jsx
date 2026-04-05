@@ -1,12 +1,15 @@
-import { motion } from "framer-motion";
+import AnimatedCard from "./AnimatedCard";
 
 export default function CategoryCard({ category, isSelected, onSelect, wordCount }) {
   return (
-    <motion.button
+    <AnimatedCard
+      as="button"
       type="button"
+      interactive
+      selected={isSelected}
       onClick={() => onSelect(category.key)}
-      whileHover={{ y: -6, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -5, scale: isSelected ? 1.04 : 1.02 }}
+      whileTap={{ scale: 0.97 }}
       className={`glow-card neon-outline relative h-full w-full overflow-hidden rounded-[1.8rem] border p-3 text-left backdrop-blur-xl ${
         isSelected ? "border-white/90 ring-2 ring-orange-200/90" : "border-white/45"
       }`}
@@ -29,6 +32,6 @@ export default function CategoryCard({ category, isSelected, onSelect, wordCount
           <span className="rounded-full bg-white/78 px-3 py-1.5 text-slate-700">Ex: {category.preview}</span>
         </div>
       </div>
-    </motion.button>
+    </AnimatedCard>
   );
 }

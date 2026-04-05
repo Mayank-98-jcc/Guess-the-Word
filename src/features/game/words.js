@@ -534,7 +534,100 @@ export const categories = {
   ],
 };
 
+export const chaosWordPairs = {
+  food: [
+    ["Pizza", "Burger"],
+    ["Pasta", "Noodles"],
+    ["Cake", "Cupcake"],
+    ["Fries", "Chips"],
+    ["Taco", "Burrito"],
+    ["Waffle", "Pancake"],
+    ["Cookie", "Brownie"],
+    ["Hotdog", "Sausage"],
+  ],
+  animals: [
+    ["Lion", "Tiger"],
+    ["Dog", "Wolf"],
+    ["Rabbit", "Hare"],
+    ["Crocodile", "Alligator"],
+    ["Dolphin", "Whale"],
+    ["Goat", "Sheep"],
+    ["Eagle", "Hawk"],
+    ["Frog", "Toad"],
+  ],
+  sports: [
+    ["Football", "Rugby"],
+    ["Tennis", "Badminton"],
+    ["Pool", "Snooker"],
+    ["Running", "Marathon"],
+    ["Skating", "Skateboarding"],
+    ["Formula One", "MotoGP"],
+    ["Baseball", "Softball"],
+    ["Judo", "Karate"],
+  ],
+  jobs: [
+    ["Doctor", "Nurse"],
+    ["Teacher", "Professor"],
+    ["Designer", "Architect"],
+    ["Police", "Soldier"],
+    ["Writer", "Journalist"],
+    ["Chef", "Baker"],
+    ["Actor", "Director"],
+    ["Photographer", "Model"],
+  ],
+  objects: [
+    ["Phone", "Laptop"],
+    ["Chair", "Sofa"],
+    ["Pen", "Pencil"],
+    ["Bottle", "Glass"],
+    ["Fork", "Spoon"],
+    ["Lamp", "Candle"],
+    ["Backpack", "Bag"],
+    ["Speaker", "Headphones"],
+  ],
+  places: [
+    ["Beach", "Island"],
+    ["School", "University"],
+    ["Cafe", "Restaurant"],
+    ["Library", "Museum"],
+    ["Airport", "Station"],
+    ["Market", "Mall"],
+    ["Farm", "Village"],
+    ["Cinema", "Theater"],
+  ],
+  movies: [
+    ["Batman", "Joker"],
+    ["Avatar", "Titanic"],
+    ["Frozen", "Moana"],
+    ["Avengers", "Justice League"],
+    ["Spider-Man", "Superman"],
+    ["Hulk", "Iron Man"],
+    ["Minions", "Toy Story"],
+    ["Inception", "Interstellar"],
+  ],
+  countries: [
+    ["India", "Pakistan"],
+    ["Japan", "South Korea"],
+    ["Canada", "USA"],
+    ["Spain", "Portugal"],
+    ["Australia", "New Zealand"],
+    ["Germany", "Switzerland"],
+    ["Norway", "Sweden"],
+    ["Thailand", "Indonesia"],
+  ],
+};
+
 export function getRandomWord(category) {
   const words = categories[category] ?? categories.food;
   return words[Math.floor(Math.random() * words.length)];
+}
+
+export function getRandomChaosPair(category) {
+  const pairs = chaosWordPairs[category] ?? chaosWordPairs.food;
+  const [word, altWord] = pairs[Math.floor(Math.random() * pairs.length)];
+
+  return {
+    word,
+    altWord,
+  };
 }

@@ -3,9 +3,12 @@ import {
   createPlayer,
   eliminatePlayer as eliminatePlayerFromGame,
   GAME_PHASES,
+  GAME_MODES,
   getAvailableImposterOptions,
   getAlivePlayers,
   getCategoryWordCount,
+  getModeHintLabel,
+  getModeSummary,
   getRandomWord,
   nextPlayer as getNextPlayerIndex,
   checkGameEnd,
@@ -18,9 +21,12 @@ export const GameContext = createContext(null);
 const initialState = {
   players: [],
   currentPlayerIndex: 0,
+  mode: GAME_MODES.MEDIUM,
   word: "",
+  altWord: "",
   wordHint: "",
   imposters: [],
+  chaosVariant: null,
   category: "food",
   imposterCount: 1,
   timerEnabled: false,
@@ -64,6 +70,14 @@ export function GameProvider({ children }) {
     setState((currentState) => ({
       ...currentState,
       category,
+    }));
+  };
+
+  const updateMode = (mode) => {
+    setState((currentState) => ({
+      ...currentState,
+      mode,
+      imposterCount: mode === GAME_MODES.CHAOS ? 1 : currentState.imposterCount,
     }));
   };
 
@@ -182,7 +196,14 @@ export function GameProvider({ children }) {
   const resetGame = () => {
     setState((currentState) => ({
       ...initialState,
-      players: currentState.players.map((player) => ({ ...player, role: null })),
+      players: currentState.players.map((player) => ({
+        ...player,
+        role: null,
+        secretWord: "",
+        secretHint: "",
+        isAlive: true,
+      })),
+      mode: currentState.mode,
       category: currentState.category,
       imposterCount: Math.min(currentState.imposterCount, getAvailableImposterOptions(currentState.players.length).slice(-1)[0] ?? 1),
       timerEnabled: currentState.timerEnabled,
@@ -211,11 +232,14 @@ export function GameProvider({ children }) {
       selectedWordPreview,
       wordCount: getCategoryWordCount(state.category),
       endState: checkGameEnd(state.players),
+      modeSummary: getModeSummary(state.mode, state),
+      modeHintLabel: getModeHintLabel(state.mode),
     },
     actions: {
       addPlayer,
       removePlayer,
       updateCategory,
+      updateMode,
       updateImposterCount,
       toggleTimer,
       updateTimerSeconds,

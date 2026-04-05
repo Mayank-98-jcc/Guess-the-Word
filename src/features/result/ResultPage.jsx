@@ -1,9 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AnimatedCard from "../../components/AnimatedCard";
 import Button from "../../components/Button";
+import ImposterReveal from "../../components/ImposterReveal";
 import Modal from "../../components/Modal";
+import PageWrapper from "../../components/PageWrapper";
+import WinScreen from "../../components/WinScreen";
 import { useGame } from "../../hooks/useGame";
+import { GAME_MODES } from "../game/gameLogic";
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -18,6 +23,8 @@ export default function ResultPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isEliminating, setIsEliminating] = useState(false);
   const [showEliminationReveal, setShowEliminationReveal] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
+  const [showWinScreen, setShowWinScreen] = useState(false);
 
   useEffect(() => {
     if (state.phase === "SETUP") {
@@ -55,12 +62,26 @@ export default function ResultPage() {
 
     setIsEliminating(true);
     const revealTimer = window.setTimeout(() => {
+      setShowFlash(true);
+      window.setTimeout(() => setShowFlash(false), 180);
       setShowEliminationReveal(true);
       setIsEliminating(false);
     }, 1400);
 
     return () => window.clearTimeout(revealTimer);
   }, [state.eliminationResult]);
+
+  useEffect(() => {
+    if (state.phase !== "RESULT") {
+      setShowWinScreen(false);
+    }
+  }, [state.phase]);
+
+  useEffect(() => {
+    if (state.phase === "RESULT" && !state.eliminationResult) {
+      setShowWinScreen(true);
+    }
+  }, [state.eliminationResult, state.phase]);
 
   const imposterNames = useMemo(
     () => state.players.filter((player) => state.imposters.includes(player.id)).map((player) => player.name),
@@ -70,17 +91,18 @@ export default function ResultPage() {
   const eliminatedPlayer = state.players.find((player) => player.id === state.eliminationTargetId) ?? null;
   const isDiscussionPhase = state.phase === "DISCUSS";
   const isEliminationPhase = state.phase === "ELIMINATION";
-  const isFinalResultPhase = state.phase === "RESULT";
   const canConfirmElimination = Boolean(selectedPlayerData) && !isEliminating && !showEliminationReveal;
+  const isChaosMode = state.mode === GAME_MODES.CHAOS;
+  const winningPlayers = useMemo(
+    () =>
+      state.players.filter((player) =>
+        state.winner === "CREW" ? player.role !== "IMPOSTER" : state.imposters.includes(player.id),
+      ),
+    [state.imposters, state.players, state.winner],
+  );
 
   return (
-    <motion.main
-      className="app-shell reveal-shell"
-      initial={{ opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -24 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-    >
+    <PageWrapper className="reveal-shell" chaos={isChaosMode}>
       <div className="reveal-stars" />
       <motion.div
         className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
@@ -150,7 +172,9 @@ export default function ResultPage() {
               </h1>
               <p className="mx-auto mt-4 max-w-2xl px-2 text-sm font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg">
                 {isDiscussionPhase
-                  ? "Everyone has seen their card. Compare clues, catch the bluff, and make the imposter sweat."
+                  ? isChaosMode
+                    ? "The table is unstable. Compare details carefully because not every player saw the same thing."
+                    : "Everyone has seen their card. Compare clues, catch the bluff, and make the imposter sweat."
                   : isEliminationPhase
                     ? "Tap a player, confirm the vote, and let the room hold its breath for the reveal."
                     : state.winner === "CREW"
@@ -182,32 +206,38 @@ export default function ResultPage() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <AnimatePresence>
                   {state.players.map((player, index) => (
-                    <motion.button
-                    key={player.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 18 }}
-                    transition={{ delay: 0.22 + index * 0.04 }}
-                    whileHover={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal ? {} : { scale: 1.04, y: -4 }}
-                    whileTap={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal ? {} : { scale: 0.98 }}
-                    disabled={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal}
-                    onClick={() => actions.selectPlayer(player.id)}
-                    className={`rounded-[1.4rem] px-4 py-4 text-left shadow-[0_14px_30px_rgba(93,44,143,0.08)] transition ${
-                      player.isAlive === false
-                        ? "bg-white/35 opacity-55"
-                        : state.selectedPlayer === player.id
-                          ? "scale-[1.03] bg-white ring-2 ring-orange-200 shadow-[0_0_24px_rgba(255,187,92,0.35)]"
-                          : "bg-white/74"
-                    } ${isEliminating && state.eliminationTargetId === player.id ? "blur-0" : isEliminating ? "blur-[2px]" : ""}`}
-                  >
-                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#9d84ae]">Player {String.fromCharCode(65 + index)}</p>
-                    <p className={`mt-2 break-words font-display text-xl font-black uppercase sm:text-2xl ${player.isAlive === false ? "line-through" : ""} text-[#2c216d]`}>
-                      {player.name}
-                    </p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8b6ea0]">
-                      {player.isAlive === false ? "Eliminated" : "Alive"}
-                    </p>
-                    </motion.button>
+                    <AnimatedCard
+                      as="button"
+                      key={player.id}
+                      type="button"
+                      interactive={player.isAlive !== false && isEliminationPhase && !isEliminating && !showEliminationReveal}
+                      selected={state.selectedPlayer === player.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{
+                        opacity: player.isAlive === false ? 0.5 : 1,
+                        y: 0,
+                        scale: isEliminating && state.eliminationTargetId === player.id ? 1.06 : state.selectedPlayer === player.id ? 1.08 : 1,
+                      }}
+                      exit={{ opacity: 0, y: 18 }}
+                      transition={{ delay: 0.22 + index * 0.04 }}
+                      disabled={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal}
+                      onClick={() => actions.selectPlayer(player.id)}
+                      className={`rounded-[1.4rem] border px-4 py-4 text-left shadow-[0_14px_30px_rgba(93,44,143,0.08)] transition ${
+                        player.isAlive === false
+                          ? "border-white/20 bg-white/35 opacity-55"
+                          : state.selectedPlayer === player.id
+                            ? "border-orange-200/90 bg-white ring-2 ring-orange-200/80 shadow-[0_0_28px_rgba(255,187,92,0.38)]"
+                            : "border-white/35 bg-white/74"
+                      } ${isEliminating && state.eliminationTargetId === player.id ? "blur-0" : isEliminating ? "blur-[2px] opacity-45" : ""}`}
+                    >
+                      <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#9d84ae]">Player {String.fromCharCode(65 + index)}</p>
+                      <p className={`mt-2 break-words font-display text-xl font-black uppercase sm:text-2xl ${player.isAlive === false ? "line-through" : ""} text-[#2c216d]`}>
+                        {player.name}
+                      </p>
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8b6ea0]">
+                        {player.isAlive === false ? "Eliminated" : "Alive"}
+                      </p>
+                    </AnimatedCard>
                   ))}
                 </AnimatePresence>
               </div>
@@ -264,8 +294,12 @@ export default function ResultPage() {
                 {isDiscussionPhase ? (
                   <>
                     <p>Give clues without saying the exact word.</p>
-                    <p>Watch for vague answers or suspicious confidence.</p>
-                    <p>The imposter should listen, improvise, and guess the word before getting caught.</p>
+                    <p>{meta.modeSummary}</p>
+                    <p>
+                      {isChaosMode && state.chaosVariant === "TWIN"
+                        ? "Listen for tiny differences. One player is working with a similar word, not a blank guess."
+                        : "Watch for vague answers or suspicious confidence."}
+                    </p>
                   </>
                 ) : isEliminationPhase ? (
                   <>
@@ -276,6 +310,7 @@ export default function ResultPage() {
                 ) : (
                   <>
                     <p>Secret word: {state.word}</p>
+                    {state.altWord ? <p>Chaos alternate word: {state.altWord}</p> : null}
                     <p>Imposter: {imposterNames.join(", ")}</p>
                     <p>Alive players remaining: {state.alivePlayers.length}</p>
                   </>
@@ -367,99 +402,48 @@ export default function ResultPage() {
       </Modal>
 
       <AnimatePresence>
-        {(isEliminating || showEliminationReveal) && eliminatedPlayer ? (
+        {showFlash ? (
           <motion.div
-            className="fixed inset-0 z-[70] flex items-center justify-center bg-[#06030d] px-4"
+            className="pointer-events-none fixed inset-0 z-[89] bg-white"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: [0, 0.9, 0] }}
             exit={{ opacity: 0 }}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_38%)]" />
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0.4 }}
-              animate={
-                isEliminating
-                  ? { scale: [0.9, 1.05, 1], rotate: [0, -1.2, 1.2, 0] }
-                  : { scale: 1, rotate: 0 }
-              }
-              transition={
-                isEliminating
-                  ? { duration: 1.2, times: [0, 0.35, 1] }
-                  : { duration: 0.35, ease: "easeOut" }
-              }
-              className="reveal-card-shell relative z-10 w-full max-w-xl p-3"
-            >
-              <div className="panel-sheen" />
-              <div className="reveal-card-inner px-8 py-10 text-center sm:px-10 sm:py-12">
-                <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#694f83]">Eliminated Player</p>
-                <h3 className="mt-5 font-display text-5xl font-black uppercase text-[#24195f] sm:text-6xl">
-                  {eliminatedPlayer.name}
-                </h3>
-                <AnimatePresence mode="wait">
-                  {showEliminationReveal ? (
-                    <motion.div
-                      key="reveal"
-                      initial={{ opacity: 0, scale: 0.72, y: 24 }}
-                      animate={{ opacity: 1, scale: [0.92, 1.08, 1], y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.6, times: [0, 0.6, 1] }}
-                      className="mt-8 flex flex-col items-center"
-                    >
-                      <p
-                        className={`max-w-[12ch] text-center font-display text-4xl font-black uppercase leading-[0.95] drop-shadow-[0_4px_18px_rgba(255,255,255,0.18)] sm:text-6xl ${
-                          state.eliminationResult === "IMPOSTER_ELIMINATED" ? "text-[#d61f72]" : "text-[#d97706]"
-                        }`}
-                      >
-                        {state.eliminationResult === "IMPOSTER_ELIMINATED"
-                          ? "Imposter Eliminated"
-                          : "Innocent Eliminated"}
-                      </p>
-                      <p className="mt-5 max-w-md text-center text-sm font-semibold text-[#5f4a73] sm:text-base">
-                        {state.eliminationResult === "IMPOSTER_ELIMINATED"
-                          ? "The room got it right. The imposter is out."
-                          : "The vote was wrong. Tension rises for the next round."}
-                      </p>
-                      <div className="mt-7">
-                        {state.phase === "RESULT" ? (
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              setShowEliminationReveal(false);
-                              setShowAnswer(true);
-                            }}
-                            className="reveal-bottom-glow w-full min-w-[18rem]"
-                          >
-                            Reveal Final Answer
-                          </Button>
-                        ) : (
-                          <Button
-                            type="button"
-                            onClick={actions.acknowledgeElimination}
-                            className="reveal-bottom-glow w-full min-w-[18rem]"
-                          >
-                            Next Round
-                          </Button>
-                        )}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="suspense"
-                      initial={{ opacity: 0.6 }}
-                      animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.03, 1] }}
-                      transition={{ duration: 0.85, repeat: Number.POSITIVE_INFINITY }}
-                      className="mt-8"
-                    >
-                      <p className="font-display text-4xl font-black uppercase text-[#24195f]">Judgement...</p>
-                      <p className="mt-4 text-sm font-semibold text-[#5f4a73]">The room goes silent before the reveal.</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          </motion.div>
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          />
         ) : null}
       </AnimatePresence>
+
+      <ImposterReveal
+        isOpen={(isEliminating || showEliminationReveal) && Boolean(eliminatedPlayer) && !showAnswer && !showWinScreen}
+        player={eliminatedPlayer}
+        result={state.eliminationResult}
+        showResult={showEliminationReveal}
+        isFinalRound={state.phase === "RESULT"}
+        onContinue={() => {
+          setShowEliminationReveal(false);
+
+          if (state.phase === "RESULT") {
+            window.setTimeout(() => {
+              setShowWinScreen(true);
+            }, 140);
+            return;
+          }
+
+          actions.acknowledgeElimination();
+        }}
+      />
+
+      <WinScreen
+        isOpen={showWinScreen && !showAnswer}
+        winner={state.winner}
+        winners={winningPlayers}
+        onRevealAnswer={() => setShowAnswer(true)}
+        onPlayAgain={() => {
+          setShowWinScreen(false);
+          actions.resetGame();
+          navigate("/");
+        }}
+      />
 
       <Modal
         isOpen={showAnswer}
@@ -486,15 +470,27 @@ export default function ResultPage() {
           </>
         }
       >
-        <div className={`rounded-[1.75rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-5 text-white`}>
-          <p className="text-xs font-bold uppercase tracking-[0.35em] text-white/75">Secret Word</p>
-          <p className="mt-3 font-display text-5xl font-black">{state.word}</p>
+        <div className={`rounded-[1.75rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-5 text-white shadow-[0_18px_38px_rgba(48,20,84,0.22)]`}>
+          <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">
+            {state.altWord ? "Primary Word" : "Secret Word"}
+          </p>
+          <p className="mt-3 font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
+            {state.word}
+          </p>
         </div>
-        <div className="frosted-inner rounded-[1.75rem] p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#8b6ea0]">Imposter</p>
-          <p className="mt-3 font-display text-3xl font-black uppercase text-[#2c216d]">{imposterNames.join(", ")}</p>
+        {state.altWord ? (
+          <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Chaos Alternate Word</p>
+            <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
+          </div>
+        ) : null}
+        <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
+          <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Imposter</p>
+          <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">
+            {imposterNames.join(", ")}
+          </p>
         </div>
       </Modal>
-    </motion.main>
+    </PageWrapper>
   );
 }

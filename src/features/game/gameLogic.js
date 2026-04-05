@@ -1,8 +1,22 @@
-import { categories } from "./words";
+import { categories, getRandomChaosPair, getRandomWord } from "./words";
+
+export { getRandomWord } from "./words";
 
 const ROLES = {
   CREWMATE: "CREWMATE",
   IMPOSTER: "IMPOSTER",
+};
+
+export const GAME_MODES = {
+  EASY: "EASY",
+  MEDIUM: "MEDIUM",
+  HARD: "HARD",
+  CHAOS: "CHAOS",
+};
+
+const CHAOS_VARIANTS = {
+  DOUBLE: "DOUBLE",
+  TWIN: "TWIN",
 };
 
 export const GAME_PHASES = {
@@ -11,6 +25,13 @@ export const GAME_PHASES = {
   DISCUSS: "DISCUSS",
   ELIMINATION: "ELIMINATION",
   RESULT: "RESULT",
+};
+
+const MODE_HINT_LABELS = {
+  [GAME_MODES.EASY]: "Clear Hint",
+  [GAME_MODES.MEDIUM]: "Abstract Hint",
+  [GAME_MODES.HARD]: "No Hint",
+  [GAME_MODES.CHAOS]: "Chaos Intel",
 };
 
 export function createPlayer(name) {
@@ -32,20 +53,96 @@ export function assignImposters(players, count) {
   return pool.slice(0, Math.min(count, Math.max(players.length - 1, 1))).map((player) => player.id);
 }
 
-export function getRandomWord(category) {
-  const categoryWords = categories[category] ?? categories.food;
-  return categoryWords[Math.floor(Math.random() * categoryWords.length)];
+export function getRandomCategory(categoriesMap = categories) {
+  const categoryKeys = Object.keys(categoriesMap);
+  return categoryKeys[Math.floor(Math.random() * categoryKeys.length)] ?? "food";
+}
+
+function getModeAwareHint(mode, wordEntry, category) {
+  if (mode === GAME_MODES.HARD) {
+    return "";
+  }
+
+  if (mode === GAME_MODES.EASY) {
+    return `${wordEntry.hint} ${category.charAt(0).toUpperCase()}${category.slice(1)}`;
+  }
+
+  return wordEntry.hint;
+}
+
+function buildRoundPlayers(players, imposters, word, hint, altWord = "", altHint = "") {
+  return players.map((player) => {
+    const isImposter = imposters.includes(player.id);
+
+    return {
+      ...player,
+      role: isImposter ? ROLES.IMPOSTER : ROLES.CREWMATE,
+      isAlive: true,
+      secretWord: isImposter && altWord ? altWord : word,
+      secretHint: isImposter ? altHint || hint : "",
+    };
+  });
+}
+
+function createModeRound(players, category, imposterCount, mode) {
+  if (mode !== GAME_MODES.CHAOS) {
+    const wordEntry = getRandomWord(category);
+    const imposters = assignImposters(players, imposterCount);
+    const hint = getModeAwareHint(mode, wordEntry, category);
+
+    return {
+      word: wordEntry.word,
+      altWord: "",
+      wordHint: hint,
+      imposters,
+      chaosVariant: null,
+      players: buildRoundPlayers(players, imposters, wordEntry.word, hint, "", ""),
+    };
+  }
+
+  const canUseDoubleImposters = players.length >= 5;
+  const useDoubleImposters = canUseDoubleImposters && Math.random() > 0.5;
+
+  if (useDoubleImposters) {
+    const wordEntry = getRandomWord(category);
+    const imposters = assignImposters(players, Math.max(2, imposterCount));
+
+    return {
+      word: wordEntry.word,
+      altWord: "",
+      wordHint: wordEntry.hint,
+      imposters,
+      chaosVariant: CHAOS_VARIANTS.DOUBLE,
+      players: buildRoundPlayers(players, imposters, wordEntry.word, wordEntry.hint, "", wordEntry.hint),
+    };
+  }
+
+  const pair = getRandomChaosPair(category);
+  const imposters = assignImposters(players, 1);
+
+  return {
+    word: pair.word,
+    altWord: pair.altWord,
+    wordHint: pair.word,
+    imposters,
+    chaosVariant: CHAOS_VARIANTS.TWIN,
+    players: buildRoundPlayers(players, imposters, pair.word, "", pair.altWord, "Different, but close"),
+  };
 }
 
 export function startGame(players, category, imposterCount, previousState = {}) {
-  const wordEntry = getRandomWord(category);
-  const imposters = assignImposters(players, imposterCount);
+  const chosenCategory = getRandomCategory();
+  const mode = previousState.mode ?? GAME_MODES.MEDIUM;
+  const round = createModeRound(players, chosenCategory, imposterCount, mode);
 
   return {
     ...previousState,
-    word: wordEntry.word,
-    wordHint: wordEntry.hint,
-    imposters,
+    category: chosenCategory,
+    word: round.word,
+    altWord: round.altWord,
+    wordHint: round.wordHint,
+    imposters: round.imposters,
+    chaosVariant: round.chaosVariant,
     currentPlayerIndex: 0,
     phase: GAME_PHASES.REVEAL,
     discussionStartedAt: null,
@@ -53,11 +150,7 @@ export function startGame(players, category, imposterCount, previousState = {}) 
     eliminationTargetId: null,
     eliminationResult: null,
     winner: null,
-    players: players.map((player) => ({
-      ...player,
-      role: imposters.includes(player.id) ? ROLES.IMPOSTER : ROLES.CREWMATE,
-      isAlive: true,
-    })),
+    players: round.players,
   };
 }
 
@@ -74,8 +167,10 @@ export function resetGame(previousState = {}) {
     ...previousState,
     currentPlayerIndex: 0,
     word: "",
+    altWord: "",
     wordHint: "",
     imposters: [],
+    chaosVariant: null,
     phase: GAME_PHASES.SETUP,
     discussionStartedAt: null,
     selectedPlayer: null,
@@ -86,6 +181,8 @@ export function resetGame(previousState = {}) {
       ...player,
       role: null,
       isAlive: true,
+      secretWord: "",
+      secretHint: "",
     })),
   };
 }
@@ -97,6 +194,28 @@ export function getAvailableImposterOptions(playerCount) {
 
 export function getCategoryWordCount(category) {
   return (categories[category] ?? []).length;
+}
+
+export function getModeSummary(mode, state) {
+  if (mode === GAME_MODES.CHAOS) {
+    return state.chaosVariant === CHAOS_VARIANTS.DOUBLE
+      ? "Two imposters are loose in the room."
+      : `A false lead is hiding behind ${state.altWord}.`;
+  }
+
+  if (mode === GAME_MODES.HARD) {
+    return "Imposters get no hint. Pure bluffing only.";
+  }
+
+  if (mode === GAME_MODES.EASY) {
+    return "Imposters get a clearer clue and extra breathing room.";
+  }
+
+  return "Imposters get a single abstract hint.";
+}
+
+export function getModeHintLabel(mode) {
+  return MODE_HINT_LABELS[mode] ?? MODE_HINT_LABELS[GAME_MODES.MEDIUM];
 }
 
 export function getAlivePlayers(players = []) {

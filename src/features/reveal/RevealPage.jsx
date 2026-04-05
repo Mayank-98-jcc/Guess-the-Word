@@ -2,13 +2,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
+import PageWrapper from "../../components/PageWrapper";
 import RevealCard from "../../components/RevealCard";
 import { useGame } from "../../hooks/useGame";
+import { GAME_MODES } from "../game/gameLogic";
 
 export default function RevealPage() {
-  const { state, actions } = useGame();
+  const { state, meta, actions } = useGame();
   const navigate = useNavigate();
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [showPassScreen, setShowPassScreen] = useState(true);
 
   useEffect(() => {
@@ -31,15 +34,20 @@ export default function RevealPage() {
 
   useEffect(() => {
     setIsRevealed(false);
+    setIsRevealing(false);
     setShowPassScreen(true);
   }, [state.currentPlayerIndex]);
 
   const handleReveal = () => {
-    if (isRevealed) {
+    if (isRevealed || isRevealing) {
       return;
     }
 
-    setIsRevealed(true);
+    setIsRevealing(true);
+    window.setTimeout(() => {
+      setIsRevealed(true);
+      setIsRevealing(false);
+    }, 300);
 
     if ("vibrate" in navigator) {
       navigator.vibrate([80, 40, 80]);
@@ -58,19 +66,14 @@ export default function RevealPage() {
   };
 
   const player = state.currentPlayer;
+  const isChaosMode = state.mode === GAME_MODES.CHAOS;
 
   if (!player) {
     return null;
   }
 
   return (
-    <motion.main
-      className="app-shell reveal-shell"
-      initial={{ opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -24 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-    >
+    <PageWrapper className="reveal-shell" chaos={isChaosMode}>
       <div className="reveal-stars" />
       <motion.div
         className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
@@ -88,18 +91,36 @@ export default function RevealPage() {
         transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-4 sm:px-6 sm:py-8">
         <div className="text-center text-white">
-          <p className="text-stroke-title text-2xl font-black uppercase sm:text-4xl md:text-5xl">
-            {player.role === "IMPOSTER" ? "One Imposter" : "One Secret Word"}
+          <p className="text-stroke-title text-xl font-black uppercase sm:text-4xl md:text-5xl">
+            {isChaosMode
+              ? state.chaosVariant === "DOUBLE"
+                ? "Chaos: Double Imposters"
+                : "Chaos: Twin Words"
+              : player.role === "IMPOSTER"
+                ? "One Imposter"
+                : "One Secret Word"}
           </p>
-          <h1 className="hero-title mt-4 font-display text-5xl font-black uppercase leading-[0.84] sm:text-6xl md:text-7xl">
-            Imposter
-            <span className="block">Who?</span>
+          <h1 className="hero-title mt-3 font-display text-4xl font-black uppercase leading-[0.88] sm:mt-4 sm:text-6xl md:text-7xl">
+            {isChaosMode ? (
+              <>
+                Total
+                <span className={`block ${isRevealed ? "chaos-glitch" : ""}`}>Chaos</span>
+              </>
+            ) : (
+              <>
+                Imposter
+                <span className="block">Who?</span>
+              </>
+            )}
           </h1>
+          <p className="mx-auto mt-3 max-w-xl px-3 text-xs font-semibold text-white/85 sm:mt-4 sm:text-base">
+            {meta.modeSummary}
+          </p>
         </div>
 
-        <div className="mt-3 flex w-full flex-1 flex-col items-center justify-center">
+        <div className="mt-2 flex w-full flex-1 flex-col items-center justify-center sm:mt-3">
           <AnimatePresence mode="wait">
             {showPassScreen ? (
               <motion.section
@@ -112,20 +133,25 @@ export default function RevealPage() {
                 <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
-                <div className="reveal-card-shell mx-auto w-full max-w-[28rem] p-3">
+                <div className="reveal-card-shell mx-auto w-full max-w-[28rem] p-2 sm:p-3">
                   <div className="panel-sheen" />
-                  <div className="reveal-card-inner flex min-h-[24rem] flex-col items-center justify-center px-8 text-center">
+                  <div className="reveal-card-inner flex min-h-[21rem] flex-col items-center justify-center px-5 text-center sm:min-h-[24rem] sm:px-8">
                     <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Pass The Phone</p>
-                    <h2 className="mt-5 font-display text-4xl font-black uppercase text-[#2c216d] sm:text-5xl">
+                    <h2 className="mt-4 break-words font-display text-3xl font-black uppercase text-[#2c216d] sm:mt-5 sm:text-5xl">
                       {player.name}
                     </h2>
+                    <div className="mt-5 w-full max-w-[16rem] space-y-3">
+                      <div className="skeleton-bar h-3 w-2/3 rounded-full" />
+                      <div className="skeleton-bar h-3 w-full rounded-full" />
+                      <div className="skeleton-bar h-3 w-4/5 rounded-full" />
+                    </div>
                     <p className="mt-5 max-w-xs text-sm font-medium text-[#715d85]">
                       Everyone else look away. Only {player.name} should open the secret card.
                     </p>
                     <Button
                       type="button"
                       onClick={() => setShowPassScreen(false)}
-                      className="reveal-bottom-glow mt-8 w-full max-w-[19rem]"
+                      className="reveal-bottom-glow mt-6 w-full max-w-[19rem] sm:mt-8"
                     >
                       I&apos;m Ready
                     </Button>
@@ -147,7 +173,11 @@ export default function RevealPage() {
                   player={player}
                   word={state.word}
                   hint={state.wordHint}
+                  hintLabel={meta.modeHintLabel}
+                  mode={state.mode}
+                  chaosVariant={state.chaosVariant}
                   isRevealed={isRevealed}
+                  isRevealing={isRevealing}
                   onReveal={handleReveal}
                 />
                 <AnimatePresence>
@@ -156,7 +186,7 @@ export default function RevealPage() {
                       initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="mx-auto mt-6 w-full max-w-[28rem]"
+                      className="mx-auto mt-5 w-full max-w-[28rem] sm:mt-6"
                     >
                       <Button type="button" onClick={handleContinue} className="reveal-bottom-glow w-full">
                         {state.currentPlayerIndex === state.players.length - 1 ? "Start Discussion" : "Pass To Next Player"}
@@ -169,6 +199,6 @@ export default function RevealPage() {
           </AnimatePresence>
         </div>
       </div>
-    </motion.main>
+    </PageWrapper>
   );
 }

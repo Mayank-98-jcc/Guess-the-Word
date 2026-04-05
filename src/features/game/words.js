@@ -1,3 +1,5 @@
+import { getRandomPair } from "./doubleWordPairs";
+
 export const categories = {
   food: [
     { word: "Pizza", hint: "Popular" },
@@ -630,4 +632,8 @@ export function getRandomChaosPair(category) {
     word,
     altWord,
   };
+}
+
+export function getRandomDoubleWordPair(category) {
+  return getRandomPair(category);
 }

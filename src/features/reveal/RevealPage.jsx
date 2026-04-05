@@ -2,8 +2,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
+import ConfusionOverlay from "../../components/ConfusionOverlay";
+import DoubleWordIntro from "../../components/DoubleWordIntro";
 import PageWrapper from "../../components/PageWrapper";
-import RevealCard from "../../components/RevealCard";
+import WordRevealCard from "../../components/WordRevealCard";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
 
@@ -13,6 +15,7 @@ export default function RevealPage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [showPassScreen, setShowPassScreen] = useState(true);
+  const [showDoubleWordIntro, setShowDoubleWordIntro] = useState(state.mode === GAME_MODES.DOUBLE_WORD);
 
   useEffect(() => {
     if (!state.players.length) {
@@ -36,7 +39,8 @@ export default function RevealPage() {
     setIsRevealed(false);
     setIsRevealing(false);
     setShowPassScreen(true);
-  }, [state.currentPlayerIndex]);
+    setShowDoubleWordIntro(state.mode === GAME_MODES.DOUBLE_WORD && state.currentPlayerIndex === 0);
+  }, [state.currentPlayerIndex, state.mode]);
 
   const handleReveal = () => {
     if (isRevealed || isRevealing) {
@@ -59,6 +63,7 @@ export default function RevealPage() {
 
     if (isLastPlayer) {
       actions.beginDiscussion();
+      navigate("/result");
       return;
     }
 
@@ -67,14 +72,16 @@ export default function RevealPage() {
 
   const player = state.currentPlayer;
   const isChaosMode = state.mode === GAME_MODES.CHAOS;
+  const isDoubleWordMode = state.mode === GAME_MODES.DOUBLE_WORD;
 
   if (!player) {
     return null;
   }
 
   return (
-    <PageWrapper className="reveal-shell" chaos={isChaosMode}>
+    <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
+      <ConfusionOverlay active={isDoubleWordMode && !showDoubleWordIntro} />
       <motion.div
         className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
         animate={{ x: [0, 20, 0] }}
@@ -94,7 +101,9 @@ export default function RevealPage() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-4 sm:px-6 sm:py-8">
         <div className="text-center text-white">
           <p className="text-stroke-title text-xl font-black uppercase sm:text-4xl md:text-5xl">
-            {isChaosMode
+            {isDoubleWordMode
+              ? "Hidden Split"
+              : isChaosMode
               ? state.chaosVariant === "DOUBLE"
                 ? "Chaos: Double Imposters"
                 : "Chaos: Twin Words"
@@ -103,7 +112,12 @@ export default function RevealPage() {
                 : "One Secret Word"}
           </p>
           <h1 className="hero-title mt-3 font-display text-4xl font-black uppercase leading-[0.88] sm:mt-4 sm:text-6xl md:text-7xl">
-            {isChaosMode ? (
+            {isDoubleWordMode ? (
+              <>
+                Trust
+                <span className={`block ${isRevealed ? "chaos-glitch" : ""}`}>Nobody</span>
+              </>
+            ) : isChaosMode ? (
               <>
                 Total
                 <span className={`block ${isRevealed ? "chaos-glitch" : ""}`}>Chaos</span>
@@ -116,13 +130,17 @@ export default function RevealPage() {
             )}
           </h1>
           <p className="mx-auto mt-3 max-w-xl px-3 text-xs font-semibold text-white/85 sm:mt-4 sm:text-base">
-            {meta.modeSummary}
+            {isDoubleWordMode ? "Something about the clues may feel slightly off tonight." : meta.modeSummary}
           </p>
         </div>
 
         <div className="mt-2 flex w-full flex-1 flex-col items-center justify-center sm:mt-3">
           <AnimatePresence mode="wait">
-            {showPassScreen ? (
+            {showDoubleWordIntro ? (
+              <motion.div key="double-word-intro" className="w-full">
+                <DoubleWordIntro isOpen={showDoubleWordIntro} onContinue={() => setShowDoubleWordIntro(false)} />
+              </motion.div>
+            ) : showPassScreen ? (
               <motion.section
                 key={`pass-${player.id}`}
                 initial={{ opacity: 0, scale: 0.94 }}
@@ -169,7 +187,7 @@ export default function RevealPage() {
                 <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
-                <RevealCard
+                <WordRevealCard
                   player={player}
                   word={state.word}
                   hint={state.wordHint}

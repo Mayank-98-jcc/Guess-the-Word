@@ -1,4 +1,4 @@
-import { categories, getRandomChaosPair, getRandomWord } from "./words";
+import { categories, getRandomChaosPair, getRandomDoubleWordPair, getRandomWord } from "./words";
 
 export { getRandomWord } from "./words";
 
@@ -12,6 +12,7 @@ export const GAME_MODES = {
   MEDIUM: "MEDIUM",
   HARD: "HARD",
   CHAOS: "CHAOS",
+  DOUBLE_WORD: "DOUBLE_WORD",
 };
 
 const CHAOS_VARIANTS = {
@@ -32,6 +33,7 @@ const MODE_HINT_LABELS = {
   [GAME_MODES.MEDIUM]: "Abstract Hint",
   [GAME_MODES.HARD]: "No Hint",
   [GAME_MODES.CHAOS]: "Chaos Intel",
+  [GAME_MODES.DOUBLE_WORD]: "Hidden Split",
 };
 
 export function createPlayer(name) {
@@ -51,6 +53,17 @@ export function assignImposters(players, count) {
   }
 
   return pool.slice(0, Math.min(count, Math.max(players.length - 1, 1))).map((player) => player.id);
+}
+
+function shufflePlayers(players) {
+  const pool = [...players];
+
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [pool[index], pool[swapIndex]] = [pool[swapIndex], pool[index]];
+  }
+
+  return pool;
 }
 
 export function getRandomCategory(categoriesMap = categories) {
@@ -84,7 +97,39 @@ function buildRoundPlayers(players, imposters, word, hint, altWord = "", altHint
   });
 }
 
+function buildDoubleWordRoundPlayers(players, imposterId, pair) {
+  const crewmates = shufflePlayers(players.filter((player) => player.id !== imposterId));
+  const groupAIds = new Set(crewmates.filter((_, index) => index % 2 === 0).map((player) => player.id));
+
+  return players.map((player) => {
+    const isImposter = player.id === imposterId;
+    const assignedWord = groupAIds.has(player.id) ? pair.wordA : pair.wordB;
+
+    return {
+      ...player,
+      role: isImposter ? ROLES.IMPOSTER : ROLES.CREWMATE,
+      isAlive: true,
+      secretWord: isImposter ? "" : assignedWord,
+      secretHint: "",
+    };
+  });
+}
+
 function createModeRound(players, category, imposterCount, mode) {
+  if (mode === GAME_MODES.DOUBLE_WORD) {
+    const pair = getRandomDoubleWordPair(category);
+    const [imposterId] = assignImposters(players, 1);
+
+    return {
+      word: pair.wordA,
+      altWord: pair.wordB,
+      wordHint: "",
+      imposters: imposterId ? [imposterId] : [],
+      chaosVariant: null,
+      players: buildDoubleWordRoundPlayers(players, imposterId, pair),
+    };
+  }
+
   if (mode !== GAME_MODES.CHAOS) {
     const wordEntry = getRandomWord(category);
     const imposters = assignImposters(players, imposterCount);
@@ -131,7 +176,7 @@ function createModeRound(players, category, imposterCount, mode) {
 }
 
 export function startGame(players, category, imposterCount, previousState = {}) {
-  const chosenCategory = getRandomCategory();
+  const chosenCategory = category || getRandomCategory();
   const mode = previousState.mode ?? GAME_MODES.MEDIUM;
   const round = createModeRound(players, chosenCategory, imposterCount, mode);
 
@@ -197,6 +242,10 @@ export function getCategoryWordCount(category) {
 }
 
 export function getModeSummary(mode, state) {
+  if (mode === GAME_MODES.DOUBLE_WORD) {
+    return "The room is secretly split between two similar words, and only the imposter sees nothing.";
+  }
+
   if (mode === GAME_MODES.CHAOS) {
     return state.chaosVariant === CHAOS_VARIANTS.DOUBLE
       ? "Two imposters are loose in the room."

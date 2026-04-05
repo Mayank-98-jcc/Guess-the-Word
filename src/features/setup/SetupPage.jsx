@@ -45,6 +45,15 @@ const modeCards = [
     gradient: "from-fuchsia-500 via-violet-500 to-cyan-400",
     shadow: "shadow-[0_0_34px_rgba(168,85,247,0.35)]",
   },
+  {
+    key: GAME_MODES.DOUBLE_WORD,
+    icon: "⚡",
+    title: "Double Word",
+    description: "The room secretly splits between two similar words while one imposter gets nothing.",
+    badge: "Confusion mode",
+    gradient: "from-amber-300 via-orange-400 to-pink-500",
+    shadow: "shadow-[0_0_34px_rgba(249,115,22,0.28)]",
+  },
 ];
 
 export default function SetupPage() {
@@ -70,6 +79,7 @@ export default function SetupPage() {
   };
 
   const isChaosMode = state.mode === GAME_MODES.CHAOS;
+  const isDoubleWordMode = state.mode === GAME_MODES.DOUBLE_WORD;
 
   useEffect(() => {
     if (state.phase === "REVEAL") {
@@ -224,12 +234,18 @@ export default function SetupPage() {
                         ? state.players.length >= 5
                           ? "Auto Chaos"
                           : "1 Imposter"
+                        : isDoubleWordMode
+                          ? "1 Imposter"
                         : `${state.imposterCount} ${state.imposterCount === 1 ? "Imposter" : "Imposters"}`}
                     </h3>
                   </div>
-                  {isChaosMode ? (
+                  {isChaosMode || isDoubleWordMode ? (
                     <div className="rounded-full bg-[#1b1037] px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-fuchsia-100">
-                      {state.players.length >= 5 ? "2 imposters or twin words" : "Twin words enabled"}
+                      {isDoubleWordMode
+                        ? "1 imposter, 2 hidden words"
+                        : state.players.length >= 5
+                          ? "2 imposters or twin words"
+                          : "Twin words enabled"}
                     </div>
                   ) : (
                     <div className="flex gap-2">
@@ -328,6 +344,8 @@ export default function SetupPage() {
                       <p className="mt-2 text-sm font-medium text-[#835e85]">
                         {isChaosMode
                           ? "Chaos mode now also randomizes the category, so no one knows what theme is coming next."
+                          : isDoubleWordMode
+                            ? "Double Word mode randomizes the category too, so the hidden split stays hard to read."
                           : "The app automatically picks a random category when the round starts."}
                       </p>
                     </div>
@@ -361,8 +379,8 @@ export default function SetupPage() {
                   </p>
                 </div>
                 <motion.div
-                  animate={isChaosMode ? { rotate: [0, -8, 8, -6, 0] } : { rotate: [0, 10, 0] }}
-                  transition={{ duration: isChaosMode ? 0.7 : 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                  animate={isChaosMode ? { rotate: [0, -8, 8, -6, 0] } : isDoubleWordMode ? { rotate: [0, 14, -10, 0] } : { rotate: [0, 10, 0] }}
+                  transition={{ duration: isChaosMode ? 0.7 : isDoubleWordMode ? 1.6 : 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                   className={`grid h-12 w-12 place-items-center rounded-full bg-white/60 text-xl shadow-[0_8px_18px_rgba(122,48,162,0.12)] ${
                     isChaosMode ? "chaos-glitch" : ""
                   }`}
@@ -391,16 +409,16 @@ export default function SetupPage() {
                         isSelected
                           ? "border-white/85 bg-white text-[#30143f] shadow-[0_0_0_2px_rgba(255,255,255,0.55),0_24px_54px_rgba(71,28,117,0.18)]"
                           : "border-white/40 bg-white/45 text-[#5c345e]"
-                      } ${mode.shadow} ${mode.key === GAME_MODES.CHAOS ? "chaos-pulse" : ""}`}
+                      } ${mode.shadow} ${mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD ? "chaos-pulse" : ""}`}
                       animate={
-                        mode.key === GAME_MODES.CHAOS && !isSelected
+                        (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
                           ? { scale: [1, 1.015, 1] }
                           : isSelected
                             ? { scale: [1, 1.02, 1], y: [0, -2, 0] }
                             : undefined
                       }
                       transition={
-                        mode.key === GAME_MODES.CHAOS && !isSelected
+                        (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
                           ? { duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }
                           : isSelected
                             ? { duration: 0.42, ease: "easeOut" }
@@ -432,7 +450,7 @@ export default function SetupPage() {
               </div>
 
               <AnimatePresence>
-                {isChaosMode ? (
+                {isChaosMode || isDoubleWordMode ? (
                   <motion.div
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -440,7 +458,11 @@ export default function SetupPage() {
                     className="mt-4 rounded-[1.4rem] border border-fuchsia-200/40 bg-[#18091f]/80 px-4 py-4 text-fuchsia-50 shadow-[0_0_30px_rgba(217,70,239,0.16)]"
                   >
                     <p className="text-xs font-black uppercase tracking-[0.3em] text-fuchsia-200">Warning</p>
-                    <p className="mt-2 text-sm font-semibold">Chaos mode is unpredictable 😈</p>
+                    <p className="mt-2 text-sm font-semibold">
+                      {isDoubleWordMode
+                        ? "Double Word mode quietly turns innocent players against each other."
+                        : "Chaos mode is unpredictable 😈"}
+                    </p>
                   </motion.div>
                 ) : null}
               </AnimatePresence>

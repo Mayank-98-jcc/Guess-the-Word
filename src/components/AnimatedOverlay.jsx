@@ -11,7 +11,7 @@ export default function AnimatedOverlay({
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          className={`fixed inset-0 z-[80] ${className}`}
+          className={`fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity }}
           exit={{ opacity: 0 }}

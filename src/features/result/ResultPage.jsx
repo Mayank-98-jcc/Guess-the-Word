@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnimatedCard from "../../components/AnimatedCard";
 import Button from "../../components/Button";
+import ConfusionOverlay from "../../components/ConfusionOverlay";
 import ImposterReveal from "../../components/ImposterReveal";
 import Modal from "../../components/Modal";
 import PageWrapper from "../../components/PageWrapper";
+import PostRevealScreen from "../../components/PostRevealScreen";
 import WinScreen from "../../components/WinScreen";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
@@ -25,12 +27,18 @@ export default function ResultPage() {
   const [showEliminationReveal, setShowEliminationReveal] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
+  const hasRoundData = state.players.length > 0 && Boolean(state.word) && Boolean(meta.selectedCategory);
 
   useEffect(() => {
-    if (state.phase === "SETUP") {
+    if (!hasRoundData || state.phase === "SETUP") {
       navigate("/");
+      return;
     }
-  }, [navigate, state.phase]);
+
+    if (state.phase === "REVEAL") {
+      navigate("/reveal");
+    }
+  }, [hasRoundData, navigate, state.phase]);
 
   useEffect(() => {
     if (!state.timerEnabled) {
@@ -93,6 +101,7 @@ export default function ResultPage() {
   const isEliminationPhase = state.phase === "ELIMINATION";
   const canConfirmElimination = Boolean(selectedPlayerData) && !isEliminating && !showEliminationReveal;
   const isChaosMode = state.mode === GAME_MODES.CHAOS;
+  const isDoubleWordMode = state.mode === GAME_MODES.DOUBLE_WORD;
   const winningPlayers = useMemo(
     () =>
       state.players.filter((player) =>
@@ -101,9 +110,34 @@ export default function ResultPage() {
     [state.imposters, state.players, state.winner],
   );
 
+  if (!hasRoundData) {
+    return (
+      <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
+        <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center px-4 py-8 sm:px-6">
+          <div className="glass-panel screen-glow w-full max-w-xl p-6 text-center text-white sm:p-8">
+            <p className="text-stroke-title text-xl font-black uppercase sm:text-3xl">
+              No Active Round
+            </p>
+            <h1 className="hero-title mt-4 font-display text-4xl font-black uppercase leading-[0.9] sm:text-6xl">
+              Returning
+              <span className="block">Home</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-md text-sm font-semibold text-white/85 sm:text-base">
+              This page needs live game data, so a fresh deploy visit will send you back to the setup screen.
+            </p>
+            <Button type="button" onClick={() => navigate("/")} className="reveal-bottom-glow mt-6">
+              Go To Setup
+            </Button>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
   return (
-    <PageWrapper className="reveal-shell" chaos={isChaosMode}>
+    <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
+      <ConfusionOverlay active={isDoubleWordMode} />
       <motion.div
         className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
         animate={{ x: [0, 20, 0] }}
@@ -172,7 +206,9 @@ export default function ResultPage() {
               </h1>
               <p className="mx-auto mt-4 max-w-2xl px-2 text-sm font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg">
                 {isDiscussionPhase
-                  ? isChaosMode
+                  ? isDoubleWordMode
+                    ? "The room sounds wrong on purpose. Trust patterns, not perfect agreement."
+                    : isChaosMode
                     ? "The table is unstable. Compare details carefully because not every player saw the same thing."
                     : "Everyone has seen their card. Compare clues, catch the bluff, and make the imposter sweat."
                   : isEliminationPhase
@@ -294,9 +330,11 @@ export default function ResultPage() {
                 {isDiscussionPhase ? (
                   <>
                     <p>Give clues without saying the exact word.</p>
-                    <p>{meta.modeSummary}</p>
+                    <p>{isDoubleWordMode ? "If the room feels slightly mismatched, stay calm and keep listening." : meta.modeSummary}</p>
                     <p>
-                      {isChaosMode && state.chaosVariant === "TWIN"
+                      {isDoubleWordMode
+                        ? "Some innocent players may sound suspicious even when they are telling the truth."
+                        : isChaosMode && state.chaosVariant === "TWIN"
                         ? "Listen for tiny differences. One player is working with a similar word, not a blank guess."
                         : "Watch for vague answers or suspicious confidence."}
                     </p>
@@ -309,8 +347,12 @@ export default function ResultPage() {
                   </>
                 ) : (
                   <>
-                    <p>Secret word: {state.word}</p>
-                    {state.altWord ? <p>Chaos alternate word: {state.altWord}</p> : null}
+                    {isDoubleWordMode ? (
+                      <p>The room was split by a hidden double-word twist.</p>
+                    ) : (
+                      <p>Secret word: {state.word}</p>
+                    )}
+                    {state.altWord ? <p>{isDoubleWordMode ? "Second hidden word" : "Chaos alternate word"}: {state.altWord}</p> : null}
                     <p>Imposter: {imposterNames.join(", ")}</p>
                     <p>Alive players remaining: {state.alivePlayers.length}</p>
                   </>
@@ -470,20 +512,26 @@ export default function ResultPage() {
           </>
         }
       >
-        <div className={`rounded-[1.75rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-5 text-white shadow-[0_18px_38px_rgba(48,20,84,0.22)]`}>
-          <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">
-            {state.altWord ? "Primary Word" : "Secret Word"}
-          </p>
-          <p className="mt-3 font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
-            {state.word}
-          </p>
-        </div>
-        {state.altWord ? (
-          <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
-            <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Chaos Alternate Word</p>
-            <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
-          </div>
-        ) : null}
+        {isDoubleWordMode ? (
+          <PostRevealScreen primaryWord={state.word} secondaryWord={state.altWord} />
+        ) : (
+          <>
+            <div className={`rounded-[1.75rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-5 text-white shadow-[0_18px_38px_rgba(48,20,84,0.22)]`}>
+              <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">
+                {state.altWord ? "Primary Word" : "Secret Word"}
+              </p>
+              <p className="mt-3 font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
+                {state.word}
+              </p>
+            </div>
+            {state.altWord ? (
+              <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
+                <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Chaos Alternate Word</p>
+                <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
+              </div>
+            ) : null}
+          </>
+        )}
         <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
           <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Imposter</p>
           <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">

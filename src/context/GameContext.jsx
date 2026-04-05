@@ -77,7 +77,7 @@ export function GameProvider({ children }) {
     setState((currentState) => ({
       ...currentState,
       mode,
-      imposterCount: mode === GAME_MODES.CHAOS ? 1 : currentState.imposterCount,
+      imposterCount: mode === GAME_MODES.CHAOS || mode === GAME_MODES.DOUBLE_WORD ? 1 : currentState.imposterCount,
     }));
   };
 

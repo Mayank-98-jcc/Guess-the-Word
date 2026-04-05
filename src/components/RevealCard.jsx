@@ -1,11 +1,48 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { GAME_MODES } from "../features/game/gameLogic";
 
+function getWordLayout(word = "") {
+  const normalizedWord = word.trim();
+  const wordParts = normalizedWord.split(/\s+/).filter(Boolean);
+  const longestPartLength = wordParts.reduce((maxLength, part) => Math.max(maxLength, part.length), 0);
+
+  if (wordParts.length > 1) {
+    return {
+      containerClassName: "px-4 py-5 sm:px-5",
+      textClassName:
+        "max-w-full whitespace-normal break-words text-[clamp(1.5rem,4vw,3rem)] leading-[0.92] tracking-[-0.03em]",
+    };
+  }
+
+  if (longestPartLength >= 14) {
+    return {
+      containerClassName: "px-4 py-5 sm:px-5",
+      textClassName:
+        "max-w-full whitespace-nowrap text-[clamp(1.2rem,4vw,2.6rem)] leading-none tracking-[-0.05em]",
+    };
+  }
+
+  if (longestPartLength >= 10) {
+    return {
+      containerClassName: "px-4 py-5 sm:px-6",
+      textClassName:
+        "max-w-full whitespace-nowrap text-[clamp(1.35rem,4.5vw,3rem)] leading-none tracking-[-0.05em]",
+    };
+  }
+
+  return {
+    containerClassName: "px-5 py-5 sm:px-7",
+    textClassName:
+      "max-w-full whitespace-nowrap text-[clamp(1.6rem,5.2vw,3.7rem)] leading-none tracking-[-0.04em]",
+  };
+}
+
 export default function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevealed, isRevealing, onReveal }) {
   const isImposter = player?.role === "IMPOSTER";
   const displayedWord = player?.secretWord || word;
   const displayedHint = player?.secretHint || hint;
   const isChaosMode = mode === GAME_MODES.CHAOS;
+  const { containerClassName, textClassName } = getWordLayout(displayedWord);
 
   return (
     <motion.button
@@ -62,7 +99,7 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
                 <h3 className="mt-5 max-w-full break-words text-center font-display text-3xl font-black uppercase leading-[0.95] text-[#2c216d] sm:text-4xl">
                   {player?.name}
                 </h3>
-                <div className="mt-8 w-full max-w-[19rem] rounded-[1.6rem] bg-white px-5 py-5 shadow-[0_18px_35px_rgba(75,37,128,0.14)] sm:px-7">
+                <div className={`mt-8 w-full max-w-[19rem] rounded-[1.6rem] bg-white shadow-[0_18px_35px_rgba(75,37,128,0.14)] ${containerClassName}`}>
                   {isImposter ? (
                     <div>
                       <p className="text-base font-black uppercase tracking-[0.18em] text-[#e05699]">You Are The</p>
@@ -97,7 +134,7 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
                       transition={{ delay: 0.18, duration: 0.35 }}
                     >
                       <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#a48faf]">Secret Word</p>
-                      <p className="mx-auto mt-2 max-w-full whitespace-nowrap text-center font-display text-[clamp(1.6rem,5.2vw,3.7rem)] font-black leading-none tracking-[-0.04em] text-[#2c216d]">
+                      <p className={`mx-auto mt-2 text-center font-display font-black text-[#2c216d] ${textClassName}`}>
                         {displayedWord}
                       </p>
                     </motion.div>

@@ -1,7 +1,9 @@
+import { lazy } from "react";
 import { Navigate, useLocation, useRoutes } from "react-router-dom";
-import RevealPage from "../features/reveal/RevealPage";
-import ResultPage from "../features/result/ResultPage";
-import SetupPage from "../features/setup/SetupPage";
+
+const SetupPage = lazy(() => import("../features/setup/SetupPage"));
+const RevealPage = lazy(() => import("../features/reveal/RevealPage"));
+const ResultPage = lazy(() => import("../features/result/ResultPage"));
 
 export default function AppRoutes() {
   const location = useLocation();

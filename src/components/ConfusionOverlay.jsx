@@ -1,7 +1,12 @@
-import { motion } from "framer-motion";
+import { memo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import useIsMobileViewport from "../hooks/useIsMobileViewport";
 
-export default function ConfusionOverlay({ active = false, className = "" }) {
-  if (!active) {
+function ConfusionOverlay({ active = false, className = "" }) {
+  const reduceMotion = useReducedMotion();
+  const isMobileViewport = useIsMobileViewport();
+
+  if (!active || reduceMotion || isMobileViewport) {
     return null;
   }
 
@@ -30,3 +35,5 @@ export default function ConfusionOverlay({ active = false, className = "" }) {
     </motion.div>
   );
 }
+
+export default memo(ConfusionOverlay);

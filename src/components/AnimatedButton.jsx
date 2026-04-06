@@ -1,5 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { memo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import useIsMobileViewport from "../hooks/useIsMobileViewport";
 
 const variants = {
   primary:
@@ -10,7 +11,7 @@ const variants = {
     "bg-white/10 text-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] backdrop-blur-lg border border-white/20",
 };
 
-export default function AnimatedButton({
+function AnimatedButton({
   children,
   className = "",
   variant = "primary",
@@ -20,9 +21,11 @@ export default function AnimatedButton({
   ...props
 }) {
   const [ripples, setRipples] = useState([]);
+  const reduceMotion = useReducedMotion();
+  const isMobileViewport = useIsMobileViewport();
 
   const handleClick = (event) => {
-    if (!disabled) {
+    if (!disabled && !reduceMotion && !isMobileViewport) {
       const rect = event.currentTarget.getBoundingClientRect();
       const nextRipple = {
         id: Date.now() + Math.random(),
@@ -41,10 +44,10 @@ export default function AnimatedButton({
 
   return (
     <motion.button
-      whileHover={disabled ? {} : { scale: 1.05, filter: "brightness(1.08)" }}
-      whileTap={disabled ? {} : { scale: 0.95 }}
-      transition={{ duration: 0.22, ease: "easeInOut" }}
-      className={`interactive-glow relative inline-flex min-h-[3.25rem] overflow-hidden rounded-full px-4 py-3 text-center font-display text-[0.7rem] font-black uppercase tracking-[0.08em] sm:min-h-12 sm:px-5 sm:text-sm ${
+      whileHover={disabled || reduceMotion || isMobileViewport ? {} : { scale: 1.03, filter: "brightness(1.06)" }}
+      whileTap={disabled ? {} : { scale: 0.97 }}
+      transition={{ duration: reduceMotion ? 0.16 : 0.22, ease: "easeInOut" }}
+      className={`interactive-glow relative inline-flex min-h-[3.5rem] overflow-hidden rounded-full px-5 py-3.5 text-center font-display text-[0.78rem] font-black uppercase tracking-[0.08em] sm:min-h-12 sm:px-5 sm:text-sm ${
         variants[variant]
       } ${disabled ? "cursor-not-allowed opacity-60" : ""} ${className}`}
       disabled={disabled}
@@ -72,3 +75,5 @@ export default function AnimatedButton({
     </motion.button>
   );
 }
+
+export default memo(AnimatedButton);

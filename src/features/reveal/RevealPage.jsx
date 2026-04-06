@@ -6,12 +6,14 @@ import ConfusionOverlay from "../../components/ConfusionOverlay";
 import DoubleWordIntro from "../../components/DoubleWordIntro";
 import PageWrapper from "../../components/PageWrapper";
 import WordRevealCard from "../../components/WordRevealCard";
+import useIsMobileViewport from "../../hooks/useIsMobileViewport";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
 
 export default function RevealPage() {
   const { state, meta, actions } = useGame();
   const navigate = useNavigate();
+  const isMobileViewport = useIsMobileViewport();
   const [isRevealed, setIsRevealed] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [showPassScreen, setShowPassScreen] = useState(true);
@@ -82,25 +84,29 @@ export default function RevealPage() {
     <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
       <ConfusionOverlay active={isDoubleWordMode && !showDoubleWordIntro} />
-      <motion.div
-        className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
-        animate={{ x: [0, 20, 0] }}
-        transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="reveal-ribbon right-[-8%] top-[30%] h-24 w-[58%] rotate-[-24deg]"
-        animate={{ x: [0, -18, 0] }}
-        transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="reveal-ribbon right-[-4%] bottom-[18%] h-24 w-[64%] rotate-[-18deg]"
-        animate={{ x: [0, 16, 0] }}
-        transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
+      {!isMobileViewport ? (
+        <>
+          <motion.div
+            className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
+            animate={{ x: [0, 20, 0] }}
+            transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="reveal-ribbon right-[-8%] top-[30%] h-24 w-[58%] rotate-[-24deg]"
+            animate={{ x: [0, -18, 0] }}
+            transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="reveal-ribbon right-[-4%] bottom-[18%] h-24 w-[64%] rotate-[-18deg]"
+            animate={{ x: [0, 16, 0] }}
+            transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+        </>
+      ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center px-4 py-4 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
         <div className="text-center text-white">
-          <p className="text-stroke-title text-xl font-black uppercase sm:text-4xl md:text-5xl">
+          <p className="text-stroke-title text-base font-black uppercase sm:text-4xl md:text-5xl">
             {isDoubleWordMode
               ? "Hidden Split"
               : isChaosMode
@@ -111,7 +117,7 @@ export default function RevealPage() {
                 ? "One Imposter"
                 : "One Secret Word"}
           </p>
-          <h1 className="hero-title mt-3 font-display text-4xl font-black uppercase leading-[0.88] sm:mt-4 sm:text-6xl md:text-7xl">
+          <h1 className="hero-title mt-3 font-display text-[2.6rem] font-black uppercase leading-[0.88] sm:mt-4 sm:text-6xl md:text-7xl">
             {isDoubleWordMode ? (
               <>
                 Trust
@@ -129,12 +135,12 @@ export default function RevealPage() {
               </>
             )}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl px-3 text-xs font-semibold text-white/85 sm:mt-4 sm:text-base">
+          <p className="mx-auto mt-3 max-w-xl px-2 text-sm font-semibold text-white/85 sm:mt-4 sm:text-base">
             {isDoubleWordMode ? "Something about the clues may feel slightly off tonight." : meta.modeSummary}
           </p>
         </div>
 
-        <div className="mt-2 flex w-full flex-1 flex-col items-center justify-center sm:mt-3">
+        <div className="mt-4 flex w-full flex-1 flex-col items-center justify-center sm:mt-3">
           <AnimatePresence mode="wait">
             {showDoubleWordIntro ? (
               <motion.div key="double-word-intro" className="w-full">

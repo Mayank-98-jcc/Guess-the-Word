@@ -9,6 +9,7 @@ import Modal from "../../components/Modal";
 import PageWrapper from "../../components/PageWrapper";
 import PostRevealScreen from "../../components/PostRevealScreen";
 import WinScreen from "../../components/WinScreen";
+import useIsMobileViewport from "../../hooks/useIsMobileViewport";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
 
@@ -21,6 +22,7 @@ function formatTime(seconds) {
 export default function ResultPage() {
   const { state, meta, actions } = useGame();
   const navigate = useNavigate();
+  const isMobileViewport = useIsMobileViewport();
   const [timeLeft, setTimeLeft] = useState(state.timerSeconds);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isEliminating, setIsEliminating] = useState(false);
@@ -138,32 +140,36 @@ export default function ResultPage() {
     <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
       <ConfusionOverlay active={isDoubleWordMode} />
-      <motion.div
-        className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
-        animate={{ x: [0, 20, 0] }}
-        transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="reveal-ribbon right-[-8%] top-[30%] h-24 w-[58%] rotate-[-24deg]"
-        animate={{ x: [0, -18, 0] }}
-        transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="reveal-ribbon right-[-4%] bottom-[18%] h-24 w-[64%] rotate-[-18deg]"
-        animate={{ x: [0, 16, 0] }}
-        transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
+      {!isMobileViewport ? (
+        <>
+          <motion.div
+            className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
+            animate={{ x: [0, 20, 0] }}
+            transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="reveal-ribbon right-[-8%] top-[30%] h-24 w-[58%] rotate-[-24deg]"
+            animate={{ x: [0, -18, 0] }}
+            transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="reveal-ribbon right-[-4%] bottom-[18%] h-24 w-[64%] rotate-[-18deg]"
+            animate={{ x: [0, 16, 0] }}
+            transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+        </>
+      ) : null}
 
       <motion.button
         type="button"
-        whileHover={{ rotate: 18, scale: 1.06 }}
+        whileHover={isMobileViewport ? {} : { rotate: 18, scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
         className="absolute right-4 top-4 z-20 grid h-12 w-12 place-items-center rounded-full bg-white/18 text-xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8 sm:top-5 sm:h-14 sm:w-14 sm:text-2xl"
       >
         ⚙
       </motion.button>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-4 py-6 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
         <section className="mx-auto w-full max-w-4xl text-center text-white">
           <AnimatePresence mode="wait">
             <motion.div
@@ -172,7 +178,7 @@ export default function ResultPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <p className="text-stroke-title text-2xl font-black uppercase sm:text-4xl md:text-5xl">
+              <p className="text-stroke-title text-lg font-black uppercase sm:text-4xl md:text-5xl">
                 {isDiscussionPhase
                   ? "Discuss And Find The Imposter"
                   : isEliminationPhase
@@ -181,7 +187,7 @@ export default function ResultPage() {
                       ? "Crew Victory"
                       : "Imposter Victory"}
               </p>
-              <h1 className="hero-title mt-4 font-display text-5xl font-black uppercase leading-[0.84] sm:text-6xl md:text-8xl">
+              <h1 className="hero-title mt-4 font-display text-[2.9rem] font-black uppercase leading-[0.84] sm:text-6xl md:text-8xl">
                 {isDiscussionPhase ? (
                   <>
                     Time To

@@ -1,6 +1,8 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
+import useIsMobileViewport from "../hooks/useIsMobileViewport";
 
-export default function AnimatedCard({
+function AnimatedCard({
   as = "div",
   className = "",
   children,
@@ -10,12 +12,13 @@ export default function AnimatedCard({
   whileTap,
   ...props
 }) {
+  const isMobileViewport = useIsMobileViewport();
   const Component = motion[as] ?? motion.div;
 
   return (
     <Component
       whileHover={
-        interactive
+        interactive && !isMobileViewport
           ? whileHover ?? { y: -5, scale: selected ? 1.08 : 1.02, boxShadow: "0 24px 54px rgba(96, 38, 160, 0.22)" }
           : whileHover
       }
@@ -28,3 +31,5 @@ export default function AnimatedCard({
     </Component>
   );
 }
+
+export default memo(AnimatedCard);

@@ -1,4 +1,6 @@
+import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import useIsMobileViewport from "../hooks/useIsMobileViewport";
 
 const particles = Array.from({ length: 10 }, (_, index) => ({
   id: index,
@@ -9,17 +11,18 @@ const particles = Array.from({ length: 10 }, (_, index) => ({
   delay: index * 0.18,
 }));
 
-export default function PageWrapper({ children, className = "", chaos = false }) {
+function PageWrapper({ children, className = "", chaos = false }) {
   const reduceMotion = useReducedMotion();
-  const visibleParticles = reduceMotion ? [] : particles;
+  const isMobileViewport = useIsMobileViewport();
+  const visibleParticles = reduceMotion || isMobileViewport ? [] : particles;
 
   return (
     <motion.main
       className={`app-shell ${chaos ? "chaos-shell" : ""} ${className}`}
-      initial={reduceMotion ? false : { opacity: 0, y: 50 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -50 }}
-      transition={{ duration: reduceMotion ? 0.2 : 0.5, ease: "easeInOut" }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -30 }}
+      transition={{ duration: reduceMotion ? 0.2 : 0.38, ease: "easeInOut" }}
     >
       <div className="sparkle-field" />
       <div className="page-gradient-pulse" />
@@ -54,3 +57,5 @@ export default function PageWrapper({ children, className = "", chaos = false })
     </motion.main>
   );
 }
+
+export default memo(PageWrapper);

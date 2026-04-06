@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import AnimatedCard from "../../components/AnimatedCard";
 import Button from "../../components/Button";
 import PageWrapper from "../../components/PageWrapper";
+import useIsMobileViewport from "../../hooks/useIsMobileViewport";
 import { categoryDetails } from "../game/categories";
 import { GAME_MODES } from "../game/gameLogic";
 import { useGame } from "../../hooks/useGame";
@@ -58,6 +59,7 @@ const modeCards = [
 
 export default function SetupPage() {
   const { state, meta, actions, navigate } = useGame();
+  const isMobileViewport = useIsMobileViewport();
   const [playerName, setPlayerName] = useState("");
   const canStart = state.players.length >= 3;
 
@@ -89,26 +91,30 @@ export default function SetupPage() {
 
   return (
     <PageWrapper>
-      <motion.div
-        className="orb left-[-4rem] top-28 h-44 w-44 bg-orange-300/55"
-        animate={{ x: [0, 24, 0], y: [0, -18, 0] }}
-        transition={{ duration: 9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="orb right-[-3rem] top-16 h-52 w-52 bg-violet-300/55"
-        animate={{ x: [0, -20, 0], y: [0, 22, 0] }}
-        transition={{ duration: 11, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="orb bottom-8 right-1/4 h-40 w-40 bg-pink-300/40"
-        animate={{ x: [0, 16, 0], y: [0, -14, 0] }}
-        transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
+      {!isMobileViewport ? (
+        <>
+          <motion.div
+            className="orb left-[-4rem] top-28 h-44 w-44 bg-orange-300/55"
+            animate={{ x: [0, 24, 0], y: [0, -18, 0] }}
+            transition={{ duration: 9, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="orb right-[-3rem] top-16 h-52 w-52 bg-violet-300/55"
+            animate={{ x: [0, -20, 0], y: [0, 22, 0] }}
+            transition={{ duration: 11, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="orb bottom-8 right-1/4 h-40 w-40 bg-pink-300/40"
+            animate={{ x: [0, 16, 0], y: [0, -14, 0] }}
+            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+        </>
+      ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8 lg:px-8">
         <motion.button
           type="button"
-          whileHover={{ rotate: 18, scale: 1.06 }}
+          whileHover={isMobileViewport ? {} : { rotate: 18, scale: 1.06 }}
           whileTap={{ scale: 0.94 }}
           className="absolute right-4 top-4 z-20 grid h-12 w-12 place-items-center rounded-full bg-white/18 text-xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8 sm:top-5 sm:h-14 sm:w-14 sm:text-2xl"
         >
@@ -117,7 +123,7 @@ export default function SetupPage() {
 
         <section className="mx-auto w-full max-w-4xl text-center">
           <motion.p
-            className="text-stroke-title text-xl font-black uppercase text-white sm:text-4xl md:text-5xl"
+            className="text-stroke-title text-base font-black uppercase text-white sm:text-4xl md:text-5xl"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
@@ -125,7 +131,7 @@ export default function SetupPage() {
             Play With Friends
           </motion.p>
           <motion.h1
-            className="hero-title mt-3 font-display text-4xl font-black uppercase leading-[0.88] text-white sm:mt-4 sm:text-6xl md:text-8xl"
+            className="hero-title mt-3 font-display text-[2.9rem] font-black uppercase leading-[0.88] text-white sm:mt-4 sm:text-6xl md:text-8xl"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.14, duration: 0.45 }}
@@ -134,7 +140,7 @@ export default function SetupPage() {
             <span className="block">Who?</span>
           </motion.h1>
           <motion.p
-            className="mx-auto mt-3 max-w-xl px-3 text-xs font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg"
+            className="mx-auto mt-3 max-w-xl px-2 text-sm font-semibold text-white/90 sm:mt-5 sm:text-base md:text-lg"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -402,29 +408,29 @@ export default function SetupPage() {
                     >
                       <motion.button
                         type="button"
-                      whileHover={{ scale: 1.08, y: -6 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => actions.updateMode(mode.key)}
-                      className={`group relative overflow-hidden rounded-[1.7rem] border px-5 py-5 text-left transition ${
-                        isSelected
-                          ? "border-white/85 bg-white text-[#30143f] shadow-[0_0_0_2px_rgba(255,255,255,0.55),0_24px_54px_rgba(71,28,117,0.18)]"
-                          : "border-white/40 bg-white/45 text-[#5c345e]"
-                      } ${mode.shadow} ${mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD ? "chaos-pulse" : ""}`}
-                      animate={
-                        (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
-                          ? { scale: [1, 1.015, 1] }
-                          : isSelected
-                            ? { scale: [1, 1.02, 1], y: [0, -2, 0] }
-                            : undefined
-                      }
-                      transition={
-                        (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
-                          ? { duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }
-                          : isSelected
-                            ? { duration: 0.42, ease: "easeOut" }
-                            : undefined
-                      }
-                    >
+                        whileHover={isMobileViewport ? {} : { scale: 1.04, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => actions.updateMode(mode.key)}
+                        className={`group relative overflow-hidden rounded-[1.7rem] border px-5 py-5 text-left transition ${
+                          isSelected
+                            ? "border-white/85 bg-white text-[#30143f] shadow-[0_0_0_2px_rgba(255,255,255,0.55),0_24px_54px_rgba(71,28,117,0.18)]"
+                            : "border-white/40 bg-white/45 text-[#5c345e]"
+                        } ${mode.shadow} ${mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD ? "chaos-pulse" : ""}`}
+                        animate={
+                          !isMobileViewport && (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
+                            ? { scale: [1, 1.015, 1] }
+                            : isSelected
+                              ? { scale: [1, 1.02, 1], y: [0, -2, 0] }
+                              : undefined
+                        }
+                        transition={
+                          !isMobileViewport && (mode.key === GAME_MODES.CHAOS || mode.key === GAME_MODES.DOUBLE_WORD) && !isSelected
+                            ? { duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }
+                            : isSelected
+                              ? { duration: 0.42, ease: "easeOut" }
+                              : undefined
+                        }
+                      >
                       <motion.div
                         className={`absolute inset-0 bg-gradient-to-br ${mode.gradient} opacity-85 transition ${
                           isSelected ? "opacity-95" : "opacity-72 group-hover:opacity-90"

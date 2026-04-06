@@ -1,4 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { memo } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import useIsMobileViewport from "../hooks/useIsMobileViewport";
 import { GAME_MODES } from "../features/game/gameLogic";
 
 function getWordLayout(word = "") {
@@ -37,37 +39,40 @@ function getWordLayout(word = "") {
   };
 }
 
-export default function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevealed, isRevealing, onReveal }) {
+function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevealed, isRevealing, onReveal }) {
+  const reduceMotion = useReducedMotion();
+  const isMobileViewport = useIsMobileViewport();
   const isImposter = player?.role === "IMPOSTER";
   const displayedWord = player?.secretWord || word;
   const displayedHint = player?.secretHint || hint;
   const isChaosMode = mode === GAME_MODES.CHAOS;
   const { containerClassName, textClassName } = getWordLayout(displayedWord);
+  const shouldSimplifyMotion = reduceMotion || isMobileViewport;
 
   return (
     <motion.button
       type="button"
       onClick={onReveal}
-      className="relative mx-auto block h-[24rem] w-full max-w-[28rem] [perspective:1200px] sm:h-[28rem]"
-      whileTap={{ scale: isRevealed ? 1 : 0.98 }}
+      className="relative mx-auto block h-[22rem] w-full max-w-[28rem] [perspective:1200px] sm:h-[28rem]"
+      whileTap={{ scale: isRevealed ? 1 : 0.97 }}
     >
       <motion.div
-        animate={{ rotateY: isRevealed ? 180 : 0, scale: isRevealed ? 1.02 : 1 }}
-        transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
-        className="relative h-full w-full [transform-style:preserve-3d]"
+        animate={{ rotateY: isRevealed ? 180 : 0, scale: isRevealed && !shouldSimplifyMotion ? 1.01 : 1 }}
+        transition={{ duration: shouldSimplifyMotion ? 0.56 : 0.62, ease: "easeInOut" }}
+        className="relative h-full w-full transform-gpu [transform-style:preserve-3d] will-change-transform"
       >
         <div className="card-face absolute inset-0 p-2">
           <motion.div
             className="reveal-card-shell h-full w-full p-3"
             animate={
-              isRevealing
+              isRevealing && !shouldSimplifyMotion
                 ? {
-                    x: [-6, 6, -4, 4, 0],
-                    filter: ["blur(0px)", "blur(2px)", "blur(1px)", "blur(0px)"],
+                    scale: [1, 0.992, 1],
+                    x: [0, 3, 0],
                   }
-                : { x: 0, filter: "blur(0px)" }
+                : { x: 0, scale: 1 }
             }
-            transition={{ duration: 0.32, ease: "easeInOut" }}
+            transition={{ duration: 0.18, ease: "easeInOut" }}
           >
             <div className="panel-sheen" />
             <div className="reveal-card-inner flex h-full w-full flex-col items-center justify-center px-6 text-center sm:px-8">
@@ -90,9 +95,9 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
             <div className="panel-sheen" />
             <div className={`reveal-card-inner flex h-full w-full flex-col items-center justify-center px-6 text-center ${isChaosMode ? "chaos-shell" : ""} sm:px-8`}>
               <motion.div
-                initial={{ opacity: 0, filter: "blur(10px)", scale: 0.92 }}
-                animate={isRevealed ? { opacity: 1, filter: "blur(0px)", scale: 1 } : {}}
-                transition={{ delay: 0.2, duration: 0.35 }}
+                initial={false}
+                animate={isRevealed ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+                transition={{ delay: isRevealed ? 0.16 : 0, duration: shouldSimplifyMotion ? 0.2 : 0.28, ease: "easeOut" }}
                 className={`flex w-full flex-col items-center ${isChaosMode && isRevealed ? "chaos-glitch" : ""}`}
               >
                 <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Secret Role</p>
@@ -109,16 +114,16 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
                       <AnimatePresence>
                         {isRevealed && displayedHint ? (
                           <motion.div
-                            initial={{ opacity: 0, y: 12, scale: 0.94 }}
-                            animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
+                            initial={false}
+                            animate={{ opacity: 1, y: 0, scale: shouldSimplifyMotion ? 1 : [1, 1.02, 1] }}
                             exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                            transition={{ delay: 0.28, duration: 0.6 }}
+                            transition={{ delay: 0.22, duration: shouldSimplifyMotion ? 0.24 : 0.45 }}
                             className="mt-5 rounded-full bg-gradient-to-r from-orange-100 to-fuchsia-100 px-5 py-3 shadow-[0_0_20px_rgba(255,160,92,0.28)]"
                           >
                             <p className="text-xs font-bold uppercase tracking-[0.32em] text-[#a55d8d]">{hintLabel}</p>
                             <motion.p
-                              animate={{ opacity: [0.85, 1, 0.85], scale: [1, 1.02, 1] }}
-                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                              animate={shouldSimplifyMotion ? { opacity: 1, scale: 1 } : { opacity: [0.9, 1, 0.9], scale: [1, 1.015, 1] }}
+                              transition={{ duration: 1.8, repeat: shouldSimplifyMotion ? 0 : Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                               className="mt-1 font-display text-2xl font-black text-[#d92f80]"
                             >
                               {displayedHint}
@@ -129,9 +134,9 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
                     </div>
                   ) : (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={isRevealed ? { opacity: 1, scale: 1 } : {}}
-                      transition={{ delay: 0.18, duration: 0.35 }}
+                      initial={false}
+                      animate={isRevealed ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+                      transition={{ delay: 0.14, duration: shouldSimplifyMotion ? 0.2 : 0.26, ease: "easeOut" }}
                     >
                       <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#a48faf]">Secret Word</p>
                       <p className={`mx-auto mt-2 text-center font-display font-black text-[#2c216d] ${textClassName}`}>
@@ -142,11 +147,11 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
                 </div>
                 <motion.p
                   animate={
-                    isImposter && isRevealed
+                    isImposter && isRevealed && !shouldSimplifyMotion
                       ? { scale: [1, 1.03, 1], opacity: [0.85, 1, 0.9] }
                       : { scale: 1, opacity: 1 }
                   }
-                  transition={{ duration: 1.6, repeat: isImposter && isRevealed ? Number.POSITIVE_INFINITY : 0 }}
+                  transition={{ duration: 1.6, repeat: isImposter && isRevealed && !shouldSimplifyMotion ? Number.POSITIVE_INFINITY : 0 }}
                   className={`mt-7 max-w-xs text-sm font-medium ${
                     isImposter && isRevealed ? "text-[#c73b72] drop-shadow-[0_0_14px_rgba(217,47,128,0.28)]" : "text-[#715d85]"
                   }`}
@@ -167,3 +172,5 @@ export default function RevealCard({ player, word, hint, hintLabel, mode, chaosV
     </motion.button>
   );
 }
+
+export default memo(RevealCard);

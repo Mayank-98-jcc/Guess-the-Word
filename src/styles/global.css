@@ -6,8 +6,15 @@
   color-scheme: light;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
   @apply min-h-screen overflow-x-hidden font-body text-slate-900 antialiased;
+  min-height: 100dvh;
   background:
     radial-gradient(circle at 20% 20%, rgba(255, 188, 125, 0.65), transparent 22%),
     radial-gradient(circle at 80% 18%, rgba(197, 123, 255, 0.55), transparent 26%),
@@ -19,11 +26,13 @@ body {
 
 #root {
   @apply min-h-screen;
+  min-height: 100dvh;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 button {
@@ -31,12 +40,18 @@ button {
   touch-action: manipulation;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 ::selection {
   @apply bg-pink-300/60 text-slate-950;
 }
 
 .app-shell {
-  @apply relative min-h-screen overflow-hidden;
+  @apply relative min-h-screen overflow-x-hidden overflow-y-auto;
+  min-height: 100dvh;
+  isolation: isolate;
   padding-top: env(safe-area-inset-top, 0);
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -334,7 +349,7 @@ button {
 
 @media (max-width: 640px) {
   body {
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
   }
 
   .sparkle-field,
@@ -373,6 +388,51 @@ button {
 
   .interactive-glow:hover {
     box-shadow: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 768px) {
+  body {
+    animation: none;
+    background-size: 100% 100%;
+  }
+
+  .app-shell::before,
+  .sparkle-field,
+  .reveal-stars,
+  .page-gradient-pulse,
+  .floating-particle,
+  .orb,
+  .reveal-ribbon {
+    display: none;
+  }
+
+  .app-shell::after,
+  .chaos-shell::before {
+    opacity: 0.45;
+  }
+
+  .glass-panel,
+  .glass-panel-strong,
+  .reveal-card-shell,
+  .winner-card,
+  .premium-input {
+    backdrop-filter: blur(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -104,9 +104,9 @@ export default function RevealPage() {
         </>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-3 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
         <div className="text-center text-white">
-          <p className="text-stroke-title text-base font-black uppercase sm:text-4xl md:text-5xl">
+          <p className="text-stroke-title text-[0.85rem] font-black uppercase tracking-[0.22em] sm:text-4xl md:text-5xl">
             {isDoubleWordMode
               ? "Hidden Split"
               : isChaosMode
@@ -117,7 +117,7 @@ export default function RevealPage() {
                 ? "One Imposter"
                 : "One Secret Word"}
           </p>
-          <h1 className="hero-title mt-3 font-display text-[2.6rem] font-black uppercase leading-[0.88] sm:mt-4 sm:text-6xl md:text-7xl">
+          <h1 className="hero-title mt-2 font-display text-[2.15rem] font-black uppercase leading-[0.84] sm:mt-4 sm:text-6xl md:text-7xl">
             {isDoubleWordMode ? (
               <>
                 Trust
@@ -135,12 +135,12 @@ export default function RevealPage() {
               </>
             )}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl px-2 text-sm font-semibold text-white/85 sm:mt-4 sm:text-base">
+          <p className="mx-auto mt-2 max-w-lg px-2 text-[0.88rem] font-semibold text-white/85 sm:mt-4 sm:text-base">
             {isDoubleWordMode ? "Something about the clues may feel slightly off tonight." : meta.modeSummary}
           </p>
         </div>
 
-        <div className="mt-4 flex w-full flex-1 flex-col items-center justify-center sm:mt-3">
+        <div className="mt-3 flex w-full flex-1 flex-col items-center justify-start sm:mt-3 sm:justify-center">
           <AnimatePresence mode="wait">
             {showDoubleWordIntro ? (
               <motion.div key="double-word-intro" className="w-full">
@@ -149,36 +149,40 @@ export default function RevealPage() {
             ) : showPassScreen ? (
               <motion.section
                 key={`pass-${player.id}`}
-                initial={{ opacity: 0, scale: 0.94 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
                 className="w-full text-center"
               >
-                <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
+                <p className="mb-4 px-2 text-[0.72rem] font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
                 <div className="reveal-card-shell mx-auto w-full max-w-[28rem] p-2 sm:p-3">
                   <div className="panel-sheen" />
-                  <div className="reveal-card-inner flex min-h-[21rem] flex-col items-center justify-center px-5 text-center sm:min-h-[24rem] sm:px-8">
-                    <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Pass The Phone</p>
-                    <h2 className="mt-4 break-words font-display text-3xl font-black uppercase text-[#2c216d] sm:mt-5 sm:text-5xl">
-                      {player.name}
-                    </h2>
-                    <div className="mt-5 w-full max-w-[16rem] space-y-3">
-                      <div className="skeleton-bar h-3 w-2/3 rounded-full" />
-                      <div className="skeleton-bar h-3 w-full rounded-full" />
-                      <div className="skeleton-bar h-3 w-4/5 rounded-full" />
+                  <div className="reveal-card-inner flex min-h-[18.5rem] flex-col items-center justify-center px-5 text-center sm:min-h-[24rem] sm:px-8">
+                    <div className="reveal-nebula" />
+                    <div className="reveal-starscape" />
+                    <div className="pass-card-layout w-full">
+                      <p className="reveal-title text-sm font-bold uppercase tracking-[0.45em]">Pass The Phone</p>
+                      <motion.h2
+                        initial={{ scale: 0.92, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.1, duration: 0.28, ease: "easeOut" }}
+                        className="reveal-title mt-2 break-words font-display text-6xl font-black uppercase sm:mt-3 sm:text-7xl"
+                      >
+                        {player.name.slice(0, 1)}
+                      </motion.h2>
+                      <p className="pass-card-copy font-medium">
+                        Everyone else look away. Only {player.name.toLowerCase()} should open the secret card.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={() => setShowPassScreen(false)}
+                        className="pass-card-button reveal-bottom-glow mt-2 w-full max-w-[19rem] self-center border border-white/35 sm:mt-3"
+                      >
+                        I&apos;m Ready
+                      </Button>
                     </div>
-                    <p className="mt-5 max-w-xs text-sm font-medium text-[#715d85]">
-                      Everyone else look away. Only {player.name} should open the secret card.
-                    </p>
-                    <Button
-                      type="button"
-                      onClick={() => setShowPassScreen(false)}
-                      className="reveal-bottom-glow mt-6 w-full max-w-[19rem] sm:mt-8"
-                    >
-                      I&apos;m Ready
-                    </Button>
                   </div>
                 </div>
               </motion.section>
@@ -190,7 +194,7 @@ export default function RevealPage() {
                 exit={{ opacity: 0, y: -18 }}
                 className="w-full text-center"
               >
-                <p className="mb-5 px-2 text-xs font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
+                <p className="mb-4 px-2 text-[0.72rem] font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
                 <WordRevealCard
@@ -210,7 +214,7 @@ export default function RevealPage() {
                       initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="mx-auto mt-5 w-full max-w-[28rem] sm:mt-6"
+                      className="mx-auto mt-4 w-full max-w-[28rem] sm:mt-6"
                     >
                       <Button type="button" onClick={handleContinue} className="reveal-bottom-glow w-full">
                         {state.currentPlayerIndex === state.players.length - 1 ? "Start Discussion" : "Pass To Next Player"}

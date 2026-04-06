@@ -11,17 +11,17 @@ const particles = Array.from({ length: 10 }, (_, index) => ({
   delay: index * 0.18,
 }));
 
-function PageWrapper({ children, className = "", chaos = false }) {
+function PageWrapper({ children, className = "", chaos = false, staticPage = false }) {
   const reduceMotion = useReducedMotion();
   const isMobileViewport = useIsMobileViewport();
   const visibleParticles = reduceMotion || isMobileViewport ? [] : particles;
 
   return (
     <motion.main
-      className={`app-shell ${chaos ? "chaos-shell" : ""} ${className}`}
-      initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+      className={`app-shell ${staticPage ? "page-static" : ""} ${chaos ? "chaos-shell" : ""} ${className}`}
+      initial={reduceMotion ? false : staticPage ? { opacity: 0 } : { opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -30 }}
+      exit={reduceMotion ? { opacity: 0 } : staticPage ? { opacity: 0 } : { opacity: 0, y: -30 }}
       transition={{ duration: reduceMotion ? 0.2 : 0.38, ease: "easeInOut" }}
     >
       <div className="sparkle-field" />

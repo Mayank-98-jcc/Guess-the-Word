@@ -90,7 +90,7 @@ export default function SetupPage() {
   }, [navigate, state.phase]);
 
   return (
-    <PageWrapper>
+    <PageWrapper className="setup-shell" staticPage>
       {!isMobileViewport ? (
         <>
           <motion.div
@@ -111,7 +111,7 @@ export default function SetupPage() {
         </>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8 lg:px-8">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8 lg:px-8">
         <motion.button
           type="button"
           whileHover={isMobileViewport ? {} : { rotate: 18, scale: 1.06 }}

@@ -53,7 +53,7 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
     <motion.button
       type="button"
       onClick={onReveal}
-      className="relative mx-auto block h-[22rem] w-full max-w-[28rem] [perspective:1200px] sm:h-[28rem]"
+      className="relative mx-auto block h-[19.5rem] w-full max-w-[28rem] appearance-none outline-none ring-0 [perspective:1200px] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 sm:h-[28rem]"
       whileTap={{ scale: isRevealed ? 1 : 0.97 }}
     >
       <motion.div
@@ -76,14 +76,19 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
           >
             <div className="panel-sheen" />
             <div className="reveal-card-inner flex h-full w-full flex-col items-center justify-center px-6 text-center sm:px-8">
-              <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Private Reveal</p>
-              <h3 className="mt-5 max-w-full break-words text-center font-display text-3xl font-black uppercase leading-[0.95] text-[#2c216d] sm:text-4xl">
+              <div className="reveal-nebula" />
+              <div className="reveal-starscape" />
+              <p className="reveal-title text-sm font-bold uppercase tracking-[0.45em]">Private Reveal</p>
+              <h3 className="reveal-title mt-5 max-w-full break-words text-center font-display text-3xl font-black uppercase leading-[0.95] sm:text-4xl">
                 {player?.name}
               </h3>
-              <p className="reveal-pill mt-7 rounded-full bg-[#2d216d] px-7 py-3 font-display text-sm font-black uppercase tracking-[0.28em] text-white">
+              <p className="reveal-pill mt-7 rounded-full border border-white/20 bg-[#2d216d]/80 px-7 py-3 font-display text-sm font-black uppercase tracking-[0.28em] text-white">
                 Tap To Reveal
               </p>
-              <p className="mt-6 max-w-xs text-sm font-medium text-[#715d85]">
+              <div className="instruction-chip mt-6 max-w-xs">
+                <span className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-[#8d73b0]">Secure</span>
+              </div>
+              <p className="reveal-body mt-4 max-w-xs text-sm font-medium leading-relaxed">
                 Everyone else look away before opening this card.
               </p>
             </div>
@@ -94,17 +99,19 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
           <div className="reveal-card-shell h-full w-full p-3">
             <div className="panel-sheen" />
             <div className={`reveal-card-inner flex h-full w-full flex-col items-center justify-center px-6 text-center ${isChaosMode ? "chaos-shell" : ""} sm:px-8`}>
+              <div className="reveal-nebula" />
+              <div className="reveal-starscape" />
               <motion.div
                 initial={false}
                 animate={isRevealed ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
                 transition={{ delay: isRevealed ? 0.16 : 0, duration: shouldSimplifyMotion ? 0.2 : 0.28, ease: "easeOut" }}
                 className={`flex w-full flex-col items-center ${isChaosMode && isRevealed ? "chaos-glitch" : ""}`}
               >
-                <p className="text-sm font-bold uppercase tracking-[0.45em] text-[#7c6393]">Secret Role</p>
-                <h3 className="mt-5 max-w-full break-words text-center font-display text-3xl font-black uppercase leading-[0.95] text-[#2c216d] sm:text-4xl">
+                <p className="reveal-title text-sm font-bold uppercase tracking-[0.45em]">Secret Role</p>
+                <h3 className="reveal-title mt-5 max-w-full break-words text-center font-display text-3xl font-black uppercase leading-[0.95] sm:text-4xl">
                   {player?.name}
                 </h3>
-                <div className={`mt-8 w-full max-w-[19rem] rounded-[1.6rem] bg-white shadow-[0_18px_35px_rgba(75,37,128,0.14)] ${containerClassName}`}>
+                <div className={`mt-8 w-full max-w-[20rem] rounded-[1.6rem] bg-white/90 shadow-[0_18px_35px_rgba(75,37,128,0.14)] sm:max-w-[19rem] ${containerClassName}`}>
                   {isImposter ? (
                     <div>
                       <p className="text-base font-black uppercase tracking-[0.18em] text-[#e05699]">You Are The</p>
@@ -153,7 +160,7 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
                   }
                   transition={{ duration: 1.6, repeat: isImposter && isRevealed && !shouldSimplifyMotion ? Number.POSITIVE_INFINITY : 0 }}
                   className={`mt-7 max-w-xs text-sm font-medium ${
-                    isImposter && isRevealed ? "text-[#c73b72] drop-shadow-[0_0_14px_rgba(217,47,128,0.28)]" : "text-[#715d85]"
+                    isImposter && isRevealed ? "text-[#ffd2f0] drop-shadow-[0_0_14px_rgba(217,47,128,0.28)]" : "reveal-body"
                   }`}
                 >
                   {isImposter

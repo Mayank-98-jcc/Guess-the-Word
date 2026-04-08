@@ -66,9 +66,12 @@ function shufflePlayers(players) {
   return pool;
 }
 
-export function getRandomCategory(categoriesMap = categories) {
+export function getRandomCategory(categoriesMap = categories, excludedCategory = null) {
   const categoryKeys = Object.keys(categoriesMap);
-  return categoryKeys[Math.floor(Math.random() * categoryKeys.length)] ?? "food";
+  const availableCategories = categoryKeys.filter((categoryKey) => categoryKey !== excludedCategory);
+  const pool = availableCategories.length ? availableCategories : categoryKeys;
+
+  return pool[Math.floor(Math.random() * pool.length)] ?? "food";
 }
 
 function getModeAwareHint(mode, wordEntry, category) {
@@ -182,6 +185,7 @@ export function startGame(players, category, imposterCount, previousState = {}) 
 
   return {
     ...previousState,
+    lastRoundCategory: chosenCategory,
     category: chosenCategory,
     word: round.word,
     altWord: round.altWord,

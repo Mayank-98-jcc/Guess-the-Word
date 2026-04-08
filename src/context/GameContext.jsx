@@ -9,6 +9,7 @@ import {
   getCategoryWordCount,
   getModeHintLabel,
   getModeSummary,
+  getRandomCategory,
   getRandomWord,
   nextPlayer as getNextPlayerIndex,
   checkGameEnd,
@@ -28,6 +29,7 @@ const initialState = {
   imposters: [],
   chaosVariant: null,
   category: "food",
+  lastRoundCategory: null,
   imposterCount: 1,
   timerEnabled: false,
   timerSeconds: 180,
@@ -107,7 +109,11 @@ export function GameProvider({ children }) {
       return false;
     }
 
-    setState((currentState) => startGame(currentState.players, currentState.category, currentState.imposterCount, currentState));
+    setState((currentState) => {
+      const nextCategory = getRandomCategory(undefined, currentState.lastRoundCategory);
+
+      return startGame(currentState.players, nextCategory, currentState.imposterCount, currentState);
+    });
 
     return true;
   };
@@ -205,6 +211,7 @@ export function GameProvider({ children }) {
       })),
       mode: currentState.mode,
       category: currentState.category,
+      lastRoundCategory: currentState.lastRoundCategory,
       imposterCount: Math.min(currentState.imposterCount, getAvailableImposterOptions(currentState.players.length).slice(-1)[0] ?? 1),
       timerEnabled: currentState.timerEnabled,
       timerSeconds: currentState.timerSeconds,

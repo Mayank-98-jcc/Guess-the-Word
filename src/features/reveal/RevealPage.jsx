@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import ConfusionOverlay from "../../components/ConfusionOverlay";
@@ -64,7 +65,10 @@ export default function RevealPage() {
     const isLastPlayer = state.currentPlayerIndex === state.players.length - 1;
 
     if (isLastPlayer) {
-      actions.beginDiscussion();
+      flushSync(() => {
+        actions.beginDiscussion();
+      });
+      navigate("/result");
       return;
     }
 

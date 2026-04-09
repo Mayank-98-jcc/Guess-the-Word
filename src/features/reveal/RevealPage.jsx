@@ -65,7 +65,6 @@ export default function RevealPage() {
 
     if (isLastPlayer) {
       actions.beginDiscussion();
-      navigate("/result");
       return;
     }
 

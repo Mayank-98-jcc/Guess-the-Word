@@ -146,7 +146,7 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
                       transition={{ delay: 0.14, duration: shouldSimplifyMotion ? 0.2 : 0.26, ease: "easeOut" }}
                     >
                       <p className="text-xs font-bold uppercase tracking-[0.35em] text-[#a48faf]">Secret Word</p>
-                      <p className={`mx-auto mt-2 text-center font-display font-black text-[#2c216d] ${textClassName}`}>
+                      <p className={`mt-2 w-full text-center font-display font-black text-[#2c216d] ${textClassName}`}>
                         {displayedWord}
                       </p>
                     </motion.div>

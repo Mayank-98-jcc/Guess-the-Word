@@ -63,4 +63,64 @@ export const categoryDetails = {
     accent: "from-lime-400 to-amber-300",
     preview: "Painting",
   },
+  famous_people: {
+    key: "famous_people",
+    label: "Famous People",
+    emoji: "⭐",
+    description: "Celebrities, athletes, and names everybody recognizes.",
+    accent: "from-amber-400 via-rose-400 to-pink-500",
+    preview: "Messi",
+  },
+  brands: {
+    key: "brands",
+    label: "Brands",
+    emoji: "🛍️",
+    description: "Big company names, iconic products, and everyday labels.",
+    accent: "from-cyan-400 via-sky-500 to-indigo-500",
+    preview: "Nike",
+  },
+  vehicles: {
+    key: "vehicles",
+    label: "Vehicles",
+    emoji: "🚗",
+    description: "Things that move people fast, slow, or somewhere in between.",
+    accent: "from-red-400 via-orange-400 to-amber-300",
+    preview: "Car",
+  },
+  technology: {
+    key: "technology",
+    label: "Technology",
+    emoji: "💻",
+    description: "Digital tools, gadgets, and tech everyone talks about.",
+    accent: "from-slate-500 via-indigo-500 to-cyan-400",
+    preview: "Laptop",
+  },
+  countries: {
+    key: "countries",
+    label: "Countries",
+    emoji: "🌐",
+    description: "Places around the world that are easy to clue and debate.",
+    accent: "from-emerald-400 via-teal-400 to-cyan-500",
+    preview: "India",
+  },
 };
+
+function formatCategoryLabel(categoryKey) {
+  return categoryKey
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function getCategoryDetail(categoryKey) {
+  return (
+    categoryDetails[categoryKey] ?? {
+      key: categoryKey,
+      label: formatCategoryLabel(categoryKey),
+      emoji: "🎲",
+      description: "A surprise category picked for this round.",
+      accent: "from-violet-500 to-fuchsia-500",
+      preview: formatCategoryLabel(categoryKey),
+    }
+  );
+}

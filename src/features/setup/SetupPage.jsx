@@ -111,7 +111,7 @@ export default function SetupPage() {
         </>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8 lg:px-8">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 py-4 pb-[calc(env(safe-area-inset-bottom,0)+5.5rem)] sm:px-6 sm:py-8 sm:pb-8 lg:px-8">
         <motion.button
           type="button"
           whileHover={isMobileViewport ? {} : { rotate: 18, scale: 1.06 }}
@@ -172,7 +172,7 @@ export default function SetupPage() {
                 value={playerName}
                 onChange={(event) => setPlayerName(event.target.value)}
                 placeholder="Enter player name"
-                className="premium-input min-w-0 flex-1 rounded-full border border-white/70 bg-white/50 px-5 py-3 text-base font-semibold text-[#5c345e] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] outline-none backdrop-blur-md placeholder:text-[#8e6c98] focus:border-white"
+                className="premium-input min-h-12 min-w-0 flex-1 rounded-full border border-white/70 bg-white/50 px-5 py-3 text-base font-semibold text-[#5c345e] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] outline-none backdrop-blur-md placeholder:text-[#8e6c98] focus:border-white"
               />
               <Button type="submit" className="w-full sm:min-w-[96px] sm:w-auto">Add</Button>
             </form>
@@ -208,14 +208,6 @@ export default function SetupPage() {
                           <p className="mt-2 max-w-[4.5rem] truncate text-xs font-semibold text-[#7c5a81]">{player.name}</p>
                         </motion.div>
                       ))}
-                      <motion.button
-                        type="button"
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.97 }}
-                        className="rounded-full bg-white/75 px-4 py-3 text-sm font-black text-[#a36aa1] shadow-[0_10px_24px_rgba(122,48,162,0.1)]"
-                      >
-                        + Add
-                      </motion.button>
                     </div>
                   ) : (
                     <motion.p
@@ -322,15 +314,17 @@ export default function SetupPage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              onClick={handleStart}
-              disabled={!canStart}
-              className="mt-6 w-full py-4 text-base sm:text-xl disabled:opacity-50"
-              icon="▶"
-            >
-              Start Game
-            </Button>
+            <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0)+0.75rem)] z-20 mt-6 rounded-[1.6rem] bg-white/10 p-2 backdrop-blur-md sm:static sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-0">
+              <Button
+                type="button"
+                onClick={handleStart}
+                disabled={!canStart}
+                className="w-full py-4 text-base sm:text-xl disabled:opacity-50"
+                icon="▶"
+              >
+                Start Game
+              </Button>
+            </div>
           </motion.section>
 
           <motion.section
@@ -411,7 +405,7 @@ export default function SetupPage() {
                         whileHover={isMobileViewport ? {} : { scale: 1.04, y: -4 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => actions.updateMode(mode.key)}
-                        className={`group relative overflow-hidden rounded-[1.7rem] border px-5 py-5 text-left transition ${
+                        className={`group relative min-h-[12rem] overflow-hidden rounded-[1.7rem] border px-5 py-5 text-left transition ${
                           isSelected
                             ? "border-white/85 bg-white text-[#30143f] shadow-[0_0_0_2px_rgba(255,255,255,0.55),0_24px_54px_rgba(71,28,117,0.18)]"
                             : "border-white/40 bg-white/45 text-[#5c345e]"

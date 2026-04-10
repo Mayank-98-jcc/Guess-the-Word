@@ -169,7 +169,7 @@ export default function ResultPage() {
         ⚙
       </motion.button>
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-4 py-6 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-4 py-6 pb-[calc(env(safe-area-inset-bottom,0)+6.5rem)] sm:px-6 sm:py-8 sm:pb-8">
         <section className="mx-auto w-full max-w-4xl text-center text-white">
           <AnimatePresence mode="wait">
             <motion.div
@@ -264,7 +264,7 @@ export default function ResultPage() {
                       transition={{ delay: 0.22 + index * 0.04 }}
                       disabled={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal}
                       onClick={() => actions.selectPlayer(player.id)}
-                      className={`rounded-[1.4rem] border px-4 py-4 text-left shadow-[0_14px_30px_rgba(93,44,143,0.08)] transition ${
+                      className={`min-h-24 rounded-[1.4rem] border px-4 py-4 text-left shadow-[0_14px_30px_rgba(93,44,143,0.08)] transition ${
                         player.isAlive === false
                           ? "border-white/20 bg-white/35 opacity-55"
                           : state.selectedPlayer === player.id
@@ -366,7 +366,7 @@ export default function ResultPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0)+0.75rem)] z-20 flex flex-col gap-3 rounded-[1.6rem] bg-white/10 p-2 backdrop-blur-md sm:static sm:flex-row sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-0">
               {isDiscussionPhase ? (
                 <>
                   <Button
@@ -526,21 +526,21 @@ export default function ResultPage() {
               <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">
                 {state.altWord ? "Primary Word" : "Secret Word"}
               </p>
-              <p className="mt-3 font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
+              <p className="mt-3 w-full text-center font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
                 {state.word}
               </p>
             </div>
             {state.altWord ? (
               <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
                 <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Chaos Alternate Word</p>
-                <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
+                <p className="mt-3 w-full text-center font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
               </div>
             ) : null}
           </>
         )}
         <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
           <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Imposter</p>
-          <p className="mt-3 font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">
+          <p className="mt-3 w-full text-center font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">
             {imposterNames.join(", ")}
           </p>
         </div>

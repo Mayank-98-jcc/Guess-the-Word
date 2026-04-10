@@ -15,7 +15,7 @@ import {
   checkGameEnd,
   startGame,
 } from "../features/game/gameLogic";
-import { categoryDetails } from "../features/game/categories";
+import { getCategoryDetail } from "../features/game/categories";
 
 export const GameContext = createContext(null);
 
@@ -224,7 +224,7 @@ export function GameProvider({ children }) {
     () => getAvailableImposterOptions(state.players.length),
     [state.players.length],
   );
-  const selectedCategory = useMemo(() => categoryDetails[state.category], [state.category]);
+  const selectedCategory = useMemo(() => getCategoryDetail(state.category), [state.category]);
   const selectedWordPreview = useMemo(() => getRandomWord(state.category), [state.category]);
 
   const value = {

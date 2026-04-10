@@ -107,7 +107,7 @@ export default function RevealPage() {
         </>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-3 pb-[calc(env(safe-area-inset-bottom,0)+1rem)] sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-3 pb-[calc(env(safe-area-inset-bottom,0)+5.5rem)] sm:px-6 sm:py-8 sm:pb-8">
         <div className="text-center text-white">
           <p className="text-stroke-title text-[0.85rem] font-black uppercase tracking-[0.22em] sm:text-4xl md:text-5xl">
             {isDoubleWordMode
@@ -217,7 +217,7 @@ export default function RevealPage() {
                       initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="mx-auto mt-4 w-full max-w-[28rem] sm:mt-6"
+                      className="sticky bottom-[calc(env(safe-area-inset-bottom,0)+0.75rem)] mx-auto mt-4 w-full max-w-[28rem] rounded-[1.6rem] bg-white/10 p-2 backdrop-blur-md sm:static sm:mt-6 sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-0"
                     >
                       <Button type="button" onClick={handleContinue} className="reveal-bottom-glow w-full">
                         {state.currentPlayerIndex === state.players.length - 1 ? "Start Discussion" : "Pass To Next Player"}

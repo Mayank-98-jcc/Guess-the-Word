@@ -47,7 +47,7 @@ function AnimatedButton({
       whileHover={disabled || reduceMotion || isMobileViewport ? {} : { scale: 1.03, filter: "brightness(1.06)" }}
       whileTap={disabled ? {} : { scale: 0.97 }}
       transition={{ duration: reduceMotion ? 0.16 : 0.22, ease: "easeInOut" }}
-      className={`interactive-glow relative inline-flex min-h-[3.5rem] overflow-hidden rounded-full px-5 py-3.5 text-center font-display text-[0.78rem] font-black uppercase tracking-[0.08em] sm:min-h-12 sm:px-5 sm:text-sm ${
+      className={`interactive-glow relative inline-flex min-h-12 overflow-hidden rounded-full px-5 py-3.5 text-center font-display text-[0.78rem] font-black uppercase tracking-[0.08em] sm:min-h-[3.5rem] sm:px-5 sm:text-sm ${
         variants[variant]
       } ${disabled ? "cursor-not-allowed opacity-60" : ""} ${className}`}
       disabled={disabled}

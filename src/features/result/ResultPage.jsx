@@ -99,6 +99,7 @@ export default function ResultPage() {
   );
   const selectedPlayerData = state.players.find((player) => player.id === state.selectedPlayer) ?? null;
   const eliminatedPlayer = state.players.find((player) => player.id === state.eliminationTargetId) ?? null;
+  const discussionStarter = state.players.find((player) => player.id === state.discussionStarterId) ?? null;
   const isDiscussionPhase = state.phase === "DISCUSS";
   const isEliminationPhase = state.phase === "ELIMINATION";
   const canConfirmElimination = Boolean(selectedPlayerData) && !isEliminating && !showEliminationReveal;
@@ -249,9 +250,9 @@ export default function ResultPage() {
                 <AnimatePresence>
                   {state.players.map((player, index) => (
                     <AnimatedCard
-                      as="button"
+                      as={isEliminationPhase ? "button" : "div"}
                       key={player.id}
-                      type="button"
+                      type={isEliminationPhase ? "button" : undefined}
                       interactive={player.isAlive !== false && isEliminationPhase && !isEliminating && !showEliminationReveal}
                       selected={state.selectedPlayer === player.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -261,7 +262,11 @@ export default function ResultPage() {
                         scale: isEliminating && state.eliminationTargetId === player.id ? 1.06 : state.selectedPlayer === player.id ? 1.08 : 1,
                       }}
                       exit={{ opacity: 0, y: 18 }}
-                      transition={{ delay: 0.22 + index * 0.04 }}
+                      transition={{
+                        delay: 0.22 + index * 0.04,
+                        duration: 0.24,
+                        ease: "easeInOut",
+                      }}
                       disabled={player.isAlive === false || !isEliminationPhase || isEliminating || showEliminationReveal}
                       onClick={() => actions.selectPlayer(player.id)}
                       className={`min-h-24 rounded-[1.4rem] border px-4 py-4 text-left shadow-[0_14px_30px_rgba(93,44,143,0.08)] transition ${
@@ -335,7 +340,34 @@ export default function ResultPage() {
               <div className="mt-4 space-y-3 text-sm font-medium text-[#715d85]">
                 {isDiscussionPhase ? (
                   <>
+                    {discussionStarter ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-[1.3rem] border border-amber-200/70 bg-gradient-to-r from-amber-100 via-white to-orange-100 px-4 py-3 shadow-[0_0_28px_rgba(251,191,36,0.28)]"
+                      >
+                        <p className="text-xs font-black uppercase tracking-[0.3em] text-[#9a6b1d]">Discussion Starter</p>
+                        <motion.p
+                          animate={{ opacity: [0.9, 1, 0.9], scale: [1, 1.02, 1] }}
+                          transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                          className="mt-2 font-display text-2xl font-black uppercase text-[#7a3d06] sm:text-3xl"
+                        >
+                          {discussionStarter.name}
+                        </motion.p>
+                      </motion.div>
+                    ) : null}
                     <p>Give clues without saying the exact word.</p>
+                    <p>
+                      Discussion starts with{" "}
+                      <motion.span
+                        animate={discussionStarter ? { opacity: [0.85, 1, 0.85] } : { opacity: 1 }}
+                        transition={{ duration: 1.6, repeat: discussionStarter ? Number.POSITIVE_INFINITY : 0, ease: "easeInOut" }}
+                        className="font-black uppercase text-[#7a3d06]"
+                      >
+                        {discussionStarter?.name ?? "a random player"}
+                      </motion.span>
+                      .
+                    </p>
                     <p>{isDoubleWordMode ? "If the room feels slightly mismatched, stay calm and keep listening." : meta.modeSummary}</p>
                     <p>
                       {isDoubleWordMode

@@ -6,6 +6,7 @@ import PageWrapper from "../../components/PageWrapper";
 import useIsMobileViewport from "../../hooks/useIsMobileViewport";
 import { categoryDetails } from "../game/categories";
 import { GAME_MODES } from "../game/gameLogic";
+import { getPlayerBadgeMap } from "../game/playerBadges";
 import { useGame } from "../../hooks/useGame";
 
 const timerOptions = [60, 120, 180, 300];
@@ -64,6 +65,7 @@ export default function SetupPage() {
   const canStart = state.players.length >= 3;
 
   const featuredCategories = useMemo(() => Object.values(categoryDetails).slice(0, 6), []);
+  const playerBadges = useMemo(() => getPlayerBadgeMap(state.players), [state.players]);
 
   const handleAddPlayer = (event) => {
     event.preventDefault();
@@ -202,7 +204,7 @@ export default function SetupPage() {
                             aria-label={`Remove ${player.name}`}
                           >
                             <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-white/70 bg-gradient-to-br from-orange-300 via-pink-400 to-violet-500 text-base font-black uppercase text-white shadow-[0_10px_22px_rgba(171,77,190,0.28)] transition group-hover:scale-105">
-                              {player.name.slice(0, 1)}
+                              {playerBadges[player.id] ?? player.name.slice(0, 1).toUpperCase()}
                             </span>
                           </button>
                           <p className="mt-2 max-w-[4.5rem] truncate text-xs font-semibold text-[#7c5a81]">{player.name}</p>

@@ -195,6 +195,7 @@ export function startGame(players, category, imposterCount, previousState = {}) 
     currentPlayerIndex: 0,
     phase: GAME_PHASES.REVEAL,
     discussionStartedAt: null,
+    discussionStarterId: null,
     selectedPlayer: null,
     eliminationTargetId: null,
     eliminationResult: null,
@@ -222,6 +223,7 @@ export function resetGame(previousState = {}) {
     chaosVariant: null,
     phase: GAME_PHASES.SETUP,
     discussionStartedAt: null,
+    discussionStarterId: null,
     selectedPlayer: null,
     eliminationTargetId: null,
     eliminationResult: null,
@@ -273,6 +275,16 @@ export function getModeHintLabel(mode) {
 
 export function getAlivePlayers(players = []) {
   return players.filter((player) => player.isAlive !== false);
+}
+
+export function getRandomAlivePlayer(players = [], excludedPlayerId = null) {
+  const alivePlayers = getAlivePlayers(players).filter((player) => player.id !== excludedPlayerId);
+
+  if (!alivePlayers.length) {
+    return null;
+  }
+
+  return alivePlayers[Math.floor(Math.random() * alivePlayers.length)] ?? null;
 }
 
 export function checkGameEnd(players = []) {

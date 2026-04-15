@@ -1,6 +1,7 @@
 import { getRandomPair } from "./doubleWordPairs";
+import { easyWordAdditions } from "./easyWordAdditions";
 
-export const categories = {
+const baseCategories = {
   food: [
     { word: "Pizza", hint: "Popular" },
     { word: "Burger", hint: "Common" },
@@ -535,6 +536,10 @@ export const categories = {
     { word: "Nepal", hint: "Majestic" },
   ],
 };
+
+export const categories = Object.fromEntries(
+  Object.entries(baseCategories).map(([category, words]) => [category, [...words, ...(easyWordAdditions[category] ?? [])]]),
+);
 
 export const chaosWordPairs = {
   food: [

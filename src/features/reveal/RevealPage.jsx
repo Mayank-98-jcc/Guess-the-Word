@@ -171,12 +171,12 @@ export default function RevealPage() {
                         initial={{ scale: 0.92, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.1, duration: 0.28, ease: "easeOut" }}
-                        className="reveal-title mt-2 break-words font-display text-6xl font-black uppercase sm:mt-3 sm:text-7xl"
+                        className="reveal-title mt-2 break-words px-3 font-display text-4xl font-black uppercase leading-[0.9] sm:mt-3 sm:text-6xl"
                       >
-                        {player.name.slice(0, 1)}
+                        {player.name}
                       </motion.h2>
                       <p className="pass-card-copy font-medium">
-                        Everyone else look away. Only {player.name.toLowerCase()} should open the secret card.
+                        Everyone else look away. Only {player.name} should open the secret card.
                       </p>
                       <Button
                         type="button"

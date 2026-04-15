@@ -9,6 +9,7 @@ import {
   getCategoryWordCount,
   getModeHintLabel,
   getModeSummary,
+  getRandomAlivePlayer,
   getRandomCategory,
   getRandomWord,
   nextPlayer as getNextPlayerIndex,
@@ -35,6 +36,7 @@ const initialState = {
   timerSeconds: 180,
   phase: GAME_PHASES.SETUP,
   discussionStartedAt: null,
+  discussionStarterId: null,
   selectedPlayer: null,
   eliminationTargetId: null,
   eliminationResult: null,
@@ -126,14 +128,19 @@ export function GameProvider({ children }) {
   };
 
   const beginDiscussion = () => {
-    setState((currentState) => ({
-      ...currentState,
-      phase: GAME_PHASES.DISCUSS,
-      discussionStartedAt: Date.now(),
-      selectedPlayer: null,
-      eliminationTargetId: null,
-      eliminationResult: null,
-    }));
+    setState((currentState) => {
+      const randomStarter = getRandomAlivePlayer(currentState.players) ?? currentState.players[0] ?? null;
+
+      return {
+        ...currentState,
+        phase: GAME_PHASES.DISCUSS,
+        discussionStartedAt: Date.now(),
+        discussionStarterId: currentState.discussionStarterId ?? randomStarter?.id ?? null,
+        selectedPlayer: null,
+        eliminationTargetId: null,
+        eliminationResult: null,
+      };
+    });
   };
 
   const startElimination = () => {
@@ -170,10 +177,20 @@ export function GameProvider({ children }) {
         currentState.players,
         currentState.selectedPlayer,
       );
+      const shouldRotateDiscussionStarter =
+        !endState &&
+        eliminatedPlayer?.role !== "IMPOSTER" &&
+        eliminatedPlayer?.id === currentState.discussionStarterId;
+      const nextDiscussionStarter = shouldRotateDiscussionStarter
+        ? getRandomAlivePlayer(players, eliminatedPlayer.id)
+        : null;
 
       return {
         ...currentState,
         players,
+        discussionStarterId: shouldRotateDiscussionStarter
+          ? nextDiscussionStarter?.id ?? null
+          : currentState.discussionStarterId,
         eliminationTargetId: eliminatedPlayer?.id ?? null,
         eliminationResult: outcome,
         selectedPlayer: null,
@@ -195,6 +212,7 @@ export function GameProvider({ children }) {
         eliminationTargetId: null,
         eliminationResult: null,
         discussionStartedAt: Date.now(),
+        discussionStarterId: currentState.discussionStarterId ?? getRandomAlivePlayer(currentState.players)?.id ?? null,
       };
     });
   };

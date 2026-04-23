@@ -1,13 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
-import AnimatedCard from "../../components/AnimatedCard";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import AppLogo from "../../components/AppLogo";
 import Button from "../../components/Button";
 import PageWrapper from "../../components/PageWrapper";
 import useIsMobileViewport from "../../hooks/useIsMobileViewport";
+import { routeModules } from "../../app/routes";
 import { categoryDetails } from "../game/categories";
 import { GAME_MODES } from "../game/gameLogic";
 import { getPlayerBadgeMap } from "../game/playerBadges";
 import { useGame } from "../../hooks/useGame";
+
+const AnimatedCard = lazy(() => import("../../components/AnimatedCard"));
 
 const timerOptions = [60, 120, 180, 300];
 const modeCards = [
@@ -58,16 +61,87 @@ const modeCards = [
   },
 ];
 
+function CrewListItem({
+  player,
+  badge,
+  onRemove,
+  onDragStart,
+  isDragging = false,
+  isGhost = false,
+  isMobileViewport = false,
+}) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.92, y: 10 }}
+      animate={{ opacity: isDragging && !isGhost ? 0.12 : 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: -10 }}
+      transition={{ type: "spring", stiffness: 430, damping: 32 }}
+      className={`relative flex shrink-0 select-none flex-col items-center text-center ${isMobileViewport ? "w-[4.25rem]" : "w-[4.7rem]"}`}
+    >
+      <button
+        type="button"
+        onPointerDown={onDragStart}
+        aria-label={`Move ${player.name}`}
+        className={`group relative grid cursor-grab place-items-center rounded-full border-[3px] border-[#ffd7f1] bg-gradient-to-br from-[#ffb08b] via-[#f46bc0] to-[#8f56ef] font-black uppercase text-white shadow-[0_14px_30px_rgba(205,121,203,0.32)] active:scale-[0.98] ${isMobileViewport ? "h-[3.55rem] w-[3.55rem] text-[1.35rem]" : "h-[4rem] w-[4rem] text-[1.55rem]"} ${isGhost ? (isMobileViewport ? "scale-[1.01]" : "scale-[1.04]") : ""}`}
+        style={{ touchAction: "none" }}
+      >
+        <span className="pointer-events-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">{badge}</span>
+        <span className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.4),transparent_42%)] opacity-90" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onRemove(player.id)}
+        disabled={isGhost}
+        className={`absolute top-0 grid place-items-center rounded-full bg-white font-black text-[#a06698] shadow-[0_6px_14px_rgba(160,102,152,0.22)] ${isMobileViewport ? "right-0 h-5 w-5 text-[0.6rem]" : "right-1 h-5 w-5 text-[0.65rem]"}`}
+        aria-label={`Remove ${player.name}`}
+      >
+        x
+      </button>
+      <div className={`w-full ${isMobileViewport ? "mt-2" : "mt-3"}`}>
+        <p className={`max-w-full break-words text-center font-black lowercase leading-tight tracking-[0.01em] text-[#7b5a83] ${isMobileViewport ? "text-[0.82rem]" : "text-[0.95rem]"}`}>
+          {player.name}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function moveItem(list, fromIndex, toIndex) {
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return list;
+  }
+
+  const next = [...list];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
+  return next;
+}
+
 export default function SetupPage() {
   const { state, meta, actions, navigate } = useGame();
   const isMobileViewport = useIsMobileViewport();
   const [playerName, setPlayerName] = useState("");
+  const [orderedPlayers, setOrderedPlayers] = useState(state.players);
+  const [dragState, setDragState] = useState(null);
+  const playerRefs = useRef(new Map());
+  const orderedPlayersRef = useRef(state.players);
   const canStart = state.players.length >= 3;
 
   const featuredCategories = useMemo(() => Object.values(categoryDetails).slice(0, 6), []);
-  const playerBadges = useMemo(() => getPlayerBadgeMap(state.players), [state.players]);
+  const playerBadges = useMemo(() => getPlayerBadgeMap(orderedPlayers), [orderedPlayers]);
 
-  const handleAddPlayer = (event) => {
+  useEffect(() => {
+    if (!dragState) {
+      setOrderedPlayers(state.players);
+    }
+  }, [dragState, state.players]);
+
+  useEffect(() => {
+    orderedPlayersRef.current = orderedPlayers;
+  }, [orderedPlayers]);
+
+  const handleAddPlayer = useCallback((event) => {
     event.preventDefault();
 
     if (!playerName.trim()) {
@@ -76,11 +150,11 @@ export default function SetupPage() {
 
     actions.addPlayer(playerName.trim());
     setPlayerName("");
-  };
+  }, [actions, playerName]);
 
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     actions.startRound();
-  };
+  }, [actions]);
 
   const isChaosMode = state.mode === GAME_MODES.CHAOS;
   const isDoubleWordMode = state.mode === GAME_MODES.DOUBLE_WORD;
@@ -90,6 +164,118 @@ export default function SetupPage() {
       navigate("/reveal");
     }
   }, [navigate, state.phase]);
+
+  useEffect(() => {
+    const warmNextRoute = () => {
+      routeModules.reveal();
+    };
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(warmNextRoute, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(warmNextRoute, 600);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  const registerPlayerRef = useCallback((playerId, node) => {
+    if (node) {
+      playerRefs.current.set(playerId, node);
+      return;
+    }
+
+    playerRefs.current.delete(playerId);
+  }, []);
+
+  const handleDragStart = useCallback((event, playerId) => {
+    if (event.button !== undefined && event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    const node = playerRefs.current.get(playerId);
+
+    if (!node) {
+      return;
+    }
+
+    const rect = node.getBoundingClientRect();
+    const parentRect = node.offsetParent?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
+    setDragState({
+      playerId,
+      pointerOffsetX: event.clientX - rect.left,
+      pointerOffsetY: event.clientY - rect.top,
+      parentLeft: parentRect.left,
+      parentTop: parentRect.top,
+      x: rect.left - parentRect.left,
+      y: rect.top - parentRect.top,
+      width: rect.width,
+      height: rect.height,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!dragState) {
+      return undefined;
+    }
+
+    const handlePointerMove = (event) => {
+      setDragState((current) => current ? ({
+        ...current,
+        x: event.clientX - current.pointerOffsetX - current.parentLeft,
+        y: event.clientY - current.pointerOffsetY - current.parentTop,
+      }) : current);
+
+      const currentPlayers = orderedPlayersRef.current;
+      const targetEntries = currentPlayers
+        .filter((player) => player.id !== dragState.playerId)
+        .map((player) => {
+          const node = playerRefs.current.get(player.id);
+
+          if (!node) {
+            return null;
+          }
+
+          const rect = node.getBoundingClientRect();
+          const centerX = rect.left + (rect.width / 2);
+          const centerY = rect.top + (rect.height / 2);
+
+          return {
+            player,
+            distance: Math.hypot(event.clientX - centerX, event.clientY - centerY),
+          };
+        })
+        .filter(Boolean)
+        .sort((first, second) => first.distance - second.distance);
+
+      const closestEntry = targetEntries[0];
+
+      if (!closestEntry) {
+        return;
+      }
+
+      setOrderedPlayers((currentPlayers) => {
+        const fromIndex = currentPlayers.findIndex((player) => player.id === dragState.playerId);
+        const toIndex = currentPlayers.findIndex((player) => player.id === closestEntry.player.id);
+        return moveItem(currentPlayers, fromIndex, toIndex);
+      });
+    };
+
+    const handlePointerUp = () => {
+      const nextPlayers = orderedPlayersRef.current;
+      setDragState(null);
+      actions.reorderPlayers(nextPlayers);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp, { once: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [actions, dragState]);
 
   return (
     <PageWrapper className="setup-shell" staticPage>
@@ -124,8 +310,13 @@ export default function SetupPage() {
         </motion.button>
 
         <section className="mx-auto w-full max-w-4xl text-center">
+          <AppLogo
+            animated
+            className="mx-auto w-[7rem] sm:w-[8.5rem] md:w-[10rem]"
+            imageClassName="block w-full rounded-[1.6rem] border border-white/35 shadow-[0_22px_50px_rgba(37,17,80,0.26)]"
+          />
           <motion.p
-            className="text-stroke-title text-base font-black uppercase text-white sm:text-4xl md:text-5xl"
+            className="text-stroke-title mt-4 text-base font-black uppercase text-white sm:text-4xl md:text-5xl"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
@@ -179,43 +370,42 @@ export default function SetupPage() {
               <Button type="submit" className="w-full sm:min-w-[96px] sm:w-auto">Add</Button>
             </form>
 
-            <div className="frosted-inner mt-5 rounded-[1.75rem] p-4">
+            <div className="mt-5 rounded-[2.1rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(255,255,255,0.88))] p-5 shadow-[0_18px_44px_rgba(163,120,184,0.14)] sm:p-6">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-[#936486]">Crew List</p>
-                <span className="text-xs font-semibold text-[#8d6d90] sm:text-sm">Need at least 3 players</span>
+                <p className="text-base font-black uppercase tracking-[0.24em] text-[#936486] sm:text-lg">Crew List</p>
+                <span className="text-sm font-bold text-[#8d6d90] sm:text-base">Need at least 3 players</span>
               </div>
-              <div className="mt-4 flex min-h-24 flex-wrap gap-3">
+              <div className="mt-6 min-h-[8.5rem]">
                 <AnimatePresence>
                   {state.players.length ? (
-                    <div className="flex flex-wrap items-start gap-3 sm:gap-4">
-                      {state.players.map((player, index) => (
-                        <motion.div
-                          key={player.id}
-                          initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ delay: index * 0.04 }}
-                          className="text-center"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => actions.removePlayer(player.id)}
-                            className="group"
-                            aria-label={`Remove ${player.name}`}
+                    <div className="flex flex-wrap items-start gap-x-4 gap-y-5">
+                      {orderedPlayers.map((player) => {
+                        const isDragging = dragState?.playerId === player.id;
+
+                        return (
+                          <motion.div
+                            key={player.id}
+                            ref={(node) => registerPlayerRef(player.id, node)}
+                            layout
+                            className={isDragging ? "opacity-0" : ""}
                           >
-                            <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-white/70 bg-gradient-to-br from-orange-300 via-pink-400 to-violet-500 text-base font-black uppercase text-white shadow-[0_10px_22px_rgba(171,77,190,0.28)] transition group-hover:scale-105">
-                              {playerBadges[player.id] ?? player.name.slice(0, 1).toUpperCase()}
-                            </span>
-                          </button>
-                          <p className="mt-2 max-w-[4.5rem] truncate text-xs font-semibold text-[#7c5a81]">{player.name}</p>
-                        </motion.div>
-                      ))}
+                            <CrewListItem
+                              player={player}
+                              badge={playerBadges[player.id] ?? player.name.slice(0, 1).toUpperCase()}
+                              onRemove={actions.removePlayer}
+                              onDragStart={(event) => handleDragStart(event, player.id)}
+                              isDragging={isDragging}
+                              isMobileViewport={isMobileViewport}
+                            />
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-sm font-medium text-[#8d6d90]"
+                      className="pt-8 text-sm font-medium text-[#8d6d90]"
                     >
                       Add a few names to get the round ready.
                     </motion.p>
@@ -223,6 +413,32 @@ export default function SetupPage() {
                 </AnimatePresence>
               </div>
             </div>
+            <AnimatePresence>
+              {dragState ? (
+                <motion.div
+                  initial={{ opacity: 0.92, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1.04 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                  className="pointer-events-none absolute z-[80]"
+                  style={{
+                    left: dragState.x,
+                    top: dragState.y,
+                    width: dragState.width,
+                    height: dragState.height,
+                  }}
+                >
+                  <CrewListItem
+                    player={orderedPlayers.find((player) => player.id === dragState.playerId) ?? orderedPlayers[0]}
+                    badge={playerBadges[dragState.playerId]}
+                    onRemove={() => {}}
+                    onDragStart={() => {}}
+                    isGhost
+                    isMobileViewport={isMobileViewport}
+                  />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
             <div className="mt-5 space-y-4">
               <div className="frosted-inner rounded-[1.75rem] p-4">

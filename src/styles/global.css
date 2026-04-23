@@ -82,6 +82,15 @@ a {
   overflow-y: auto;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .setup-shell,
 .reveal-shell {
   color: #2c216d;

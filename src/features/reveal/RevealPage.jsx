@@ -1,15 +1,19 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import AppLogo from "../../components/AppLogo";
 import Button from "../../components/Button";
-import ConfusionOverlay from "../../components/ConfusionOverlay";
-import DoubleWordIntro from "../../components/DoubleWordIntro";
+import LeaveGameDialog from "../../components/LeaveGameDialog";
 import PageWrapper from "../../components/PageWrapper";
-import WordRevealCard from "../../components/WordRevealCard";
 import useIsMobileViewport from "../../hooks/useIsMobileViewport";
+import { routeModules } from "../../app/routes";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
+
+const ConfusionOverlay = lazy(() => import("../../components/ConfusionOverlay"));
+const DoubleWordIntro = lazy(() => import("../../components/DoubleWordIntro"));
+const WordRevealCard = lazy(() => import("../../components/WordRevealCard"));
 
 export default function RevealPage() {
   const { state, meta, actions } = useGame();
@@ -19,6 +23,7 @@ export default function RevealPage() {
   const [isRevealing, setIsRevealing] = useState(false);
   const [showPassScreen, setShowPassScreen] = useState(true);
   const [showDoubleWordIntro, setShowDoubleWordIntro] = useState(state.mode === GAME_MODES.DOUBLE_WORD);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   useEffect(() => {
     if (!state.players.length) {
@@ -45,7 +50,21 @@ export default function RevealPage() {
     setShowDoubleWordIntro(state.mode === GAME_MODES.DOUBLE_WORD && state.currentPlayerIndex === 0);
   }, [state.currentPlayerIndex, state.mode]);
 
-  const handleReveal = () => {
+  useEffect(() => {
+    const warmNextRoute = () => {
+      routeModules.result();
+    };
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(warmNextRoute, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(warmNextRoute, 600);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  const handleReveal = useCallback(() => {
     if (isRevealed || isRevealing) {
       return;
     }
@@ -59,9 +78,9 @@ export default function RevealPage() {
     if ("vibrate" in navigator) {
       navigator.vibrate([80, 40, 80]);
     }
-  };
+  }, [isRevealed, isRevealing]);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     const isLastPlayer = state.currentPlayerIndex === state.players.length - 1;
 
     if (isLastPlayer) {
@@ -73,7 +92,12 @@ export default function RevealPage() {
     }
 
     actions.nextPlayer();
-  };
+  }, [actions, navigate, state.currentPlayerIndex, state.players.length]);
+
+  const handleExitRound = useCallback(() => {
+    actions.resetGame();
+    navigate("/");
+  }, [actions, navigate]);
 
   const player = state.currentPlayer;
   const isChaosMode = state.mode === GAME_MODES.CHAOS;
@@ -86,7 +110,22 @@ export default function RevealPage() {
   return (
     <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
-      <ConfusionOverlay active={isDoubleWordMode && !showDoubleWordIntro} />
+      <Suspense fallback={null}>
+        <ConfusionOverlay active={isDoubleWordMode && !showDoubleWordIntro} />
+      </Suspense>
+      <button
+        type="button"
+        aria-label="Exit current game"
+        onClick={() => setShowLeaveDialog(true)}
+        className="absolute right-[calc(env(safe-area-inset-right,0)+1rem)] top-[calc(env(safe-area-inset-top,0)+1rem)] z-30 grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-white/18 font-display text-xl font-black text-white shadow-[0_12px_30px_rgba(48,20,84,0.28)] backdrop-blur-md transition hover:bg-white/25 sm:right-8 sm:top-6 sm:h-12 sm:w-12"
+      >
+        X
+      </button>
+      <LeaveGameDialog
+        isOpen={showLeaveDialog}
+        onStay={() => setShowLeaveDialog(false)}
+        onLeave={handleExitRound}
+      />
       {!isMobileViewport ? (
         <>
           <motion.div
@@ -109,6 +148,11 @@ export default function RevealPage() {
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col items-center px-4 py-3 pb-[calc(env(safe-area-inset-bottom,0)+5.5rem)] sm:px-6 sm:py-8 sm:pb-8">
         <div className="text-center text-white">
+          <AppLogo
+            animated
+            className="mx-auto w-[6.4rem] sm:w-[7.5rem] md:w-[8.5rem]"
+            imageClassName="block w-full rounded-[1.45rem] border border-white/35 shadow-[0_18px_44px_rgba(24,12,62,0.28)]"
+          />
           <p className="text-stroke-title text-[0.85rem] font-black uppercase tracking-[0.22em] sm:text-4xl md:text-5xl">
             {isDoubleWordMode
               ? "Hidden Split"
@@ -120,7 +164,7 @@ export default function RevealPage() {
                 ? "One Imposter"
                 : "One Secret Word"}
           </p>
-          <h1 className="hero-title mt-2 font-display text-[2.15rem] font-black uppercase leading-[0.84] sm:mt-4 sm:text-6xl md:text-7xl">
+          <h1 className="hero-title mt-3 font-display text-[2.15rem] font-black uppercase leading-[0.84] sm:mt-4 sm:text-6xl md:text-7xl">
             {isDoubleWordMode ? (
               <>
                 Trust
@@ -147,7 +191,9 @@ export default function RevealPage() {
           <AnimatePresence mode="wait">
             {showDoubleWordIntro ? (
               <motion.div key="double-word-intro" className="w-full">
-                <DoubleWordIntro isOpen={showDoubleWordIntro} onContinue={() => setShowDoubleWordIntro(false)} />
+                <Suspense fallback={null}>
+                  <DoubleWordIntro isOpen={showDoubleWordIntro} onContinue={() => setShowDoubleWordIntro(false)} />
+                </Suspense>
               </motion.div>
             ) : showPassScreen ? (
               <motion.section
@@ -200,17 +246,19 @@ export default function RevealPage() {
                 <p className="mb-4 px-2 text-[0.72rem] font-bold uppercase tracking-[0.32em] text-white/80 sm:text-sm sm:tracking-[0.4em]">
                   Player {state.currentPlayerIndex + 1} of {state.players.length}
                 </p>
-                <WordRevealCard
-                  player={player}
-                  word={state.word}
-                  hint={state.wordHint}
-                  hintLabel={meta.modeHintLabel}
-                  mode={state.mode}
-                  chaosVariant={state.chaosVariant}
-                  isRevealed={isRevealed}
-                  isRevealing={isRevealing}
-                  onReveal={handleReveal}
-                />
+                <Suspense fallback={<div className="mx-auto h-[19.5rem] w-full max-w-[28rem] rounded-[2rem] bg-white/10 sm:h-[28rem]" />}>
+                  <WordRevealCard
+                    player={player}
+                    word={state.word}
+                    hint={state.wordHint}
+                    hintLabel={meta.modeHintLabel}
+                    mode={state.mode}
+                    chaosVariant={state.chaosVariant}
+                    isRevealed={isRevealed}
+                    isRevealing={isRevealing}
+                    onReveal={handleReveal}
+                  />
+                </Suspense>
                 <AnimatePresence>
                   {isRevealed ? (
                     <motion.div

@@ -11,10 +11,12 @@ const particles = Array.from({ length: 10 }, (_, index) => ({
   delay: index * 0.18,
 }));
 
+const mobileParticles = particles.slice(0, 2);
+
 function PageWrapper({ children, className = "", chaos = false, staticPage = false }) {
   const reduceMotion = useReducedMotion();
   const isMobileViewport = useIsMobileViewport();
-  const visibleParticles = reduceMotion || isMobileViewport ? [] : particles;
+  const visibleParticles = reduceMotion ? [] : isMobileViewport ? mobileParticles : particles.slice(0, 4);
 
   return (
     <motion.main
@@ -22,7 +24,8 @@ function PageWrapper({ children, className = "", chaos = false, staticPage = fal
       initial={reduceMotion ? false : staticPage ? { opacity: 0 } : { opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reduceMotion ? { opacity: 0 } : staticPage ? { opacity: 0 } : { opacity: 0, y: -30 }}
-      transition={{ duration: reduceMotion ? 0.2 : 0.38, ease: "easeInOut" }}
+      transition={{ duration: reduceMotion ? 0.16 : 0.24, ease: "easeOut" }}
+      style={{ willChange: "transform, opacity" }}
     >
       <div className="sparkle-field" />
       <div className="page-gradient-pulse" />
@@ -46,9 +49,9 @@ function PageWrapper({ children, className = "", chaos = false, staticPage = fal
                 }
           }
           transition={{
-            duration: particle.duration,
+            duration: Math.max(5.5, particle.duration - 1.6),
             delay: particle.delay,
-            repeat: Number.POSITIVE_INFINITY,
+            repeat: 1,
             ease: "easeInOut",
           }}
         />

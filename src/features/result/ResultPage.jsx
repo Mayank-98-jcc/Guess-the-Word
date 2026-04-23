@@ -1,17 +1,19 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AnimatedCard from "../../components/AnimatedCard";
+import AppLogo from "../../components/AppLogo";
 import Button from "../../components/Button";
-import ConfusionOverlay from "../../components/ConfusionOverlay";
-import ImposterReveal from "../../components/ImposterReveal";
-import Modal from "../../components/Modal";
+import LeaveGameDialog from "../../components/LeaveGameDialog";
 import PageWrapper from "../../components/PageWrapper";
-import PostRevealScreen from "../../components/PostRevealScreen";
-import WinScreen from "../../components/WinScreen";
-import useIsMobileViewport from "../../hooks/useIsMobileViewport";
 import { useGame } from "../../hooks/useGame";
 import { GAME_MODES } from "../game/gameLogic";
+
+const AnimatedCard = lazy(() => import("../../components/AnimatedCard"));
+const ConfusionOverlay = lazy(() => import("../../components/ConfusionOverlay"));
+const ImposterReveal = lazy(() => import("../../components/ImposterReveal"));
+const Modal = lazy(() => import("../../components/Modal"));
+const PostRevealScreen = lazy(() => import("../../components/PostRevealScreen"));
+const WinScreen = lazy(() => import("../../components/WinScreen"));
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -22,13 +24,13 @@ function formatTime(seconds) {
 export default function ResultPage() {
   const { state, meta, actions } = useGame();
   const navigate = useNavigate();
-  const isMobileViewport = useIsMobileViewport();
   const [timeLeft, setTimeLeft] = useState(state.timerSeconds);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isEliminating, setIsEliminating] = useState(false);
   const [showEliminationReveal, setShowEliminationReveal] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const hasRoundData = state.players.length > 0 && Boolean(state.word) && Boolean(meta.selectedCategory);
 
   useEffect(() => {
@@ -118,6 +120,11 @@ export default function ResultPage() {
       <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center px-4 py-8 sm:px-6">
           <div className="glass-panel screen-glow w-full max-w-xl p-6 text-center text-white sm:p-8">
+            <AppLogo
+              animated
+              className="mx-auto w-[6.5rem] sm:w-[7.5rem]"
+              imageClassName="block w-full rounded-[1.4rem] border border-white/35 shadow-[0_20px_44px_rgba(24,12,62,0.24)]"
+            />
             <p className="text-stroke-title text-xl font-black uppercase sm:text-3xl">
               No Active Round
             </p>
@@ -141,36 +148,28 @@ export default function ResultPage() {
     <PageWrapper className="reveal-shell" chaos={isChaosMode || isDoubleWordMode}>
       <div className="reveal-stars" />
       <ConfusionOverlay active={isDoubleWordMode} />
-      {!isMobileViewport ? (
-        <>
-          <motion.div
-            className="reveal-ribbon left-[-8%] top-[42%] h-28 w-[72%] rotate-[18deg]"
-            animate={{ x: [0, 20, 0] }}
-            transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="reveal-ribbon right-[-8%] top-[30%] h-24 w-[58%] rotate-[-24deg]"
-            animate={{ x: [0, -18, 0] }}
-            transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="reveal-ribbon right-[-4%] bottom-[18%] h-24 w-[64%] rotate-[-18deg]"
-            animate={{ x: [0, 16, 0] }}
-            transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          />
-        </>
-      ) : null}
-
-      <motion.button
+      <button
         type="button"
-        whileHover={isMobileViewport ? {} : { rotate: 18, scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
-        className="absolute right-4 top-4 z-20 grid h-12 w-12 place-items-center rounded-full bg-white/18 text-xl text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md sm:right-8 sm:top-5 sm:h-14 sm:w-14 sm:text-2xl"
+        aria-label="Exit current game"
+        onClick={() => setShowLeaveDialog(true)}
+        className="absolute right-[calc(env(safe-area-inset-right,0)+1rem)] top-[calc(env(safe-area-inset-top,0)+1rem)] z-30 grid h-11 w-11 place-items-center rounded-full border border-white/35 bg-white/18 font-display text-xl font-black text-white shadow-[0_12px_30px_rgba(118,52,168,0.28)] backdrop-blur-md transition hover:bg-white/25 sm:right-8 sm:top-5 sm:h-12 sm:w-12"
       >
-        ⚙
-      </motion.button>
+        X
+      </button>
+      <LeaveGameDialog
+        isOpen={showLeaveDialog}
+        onStay={() => setShowLeaveDialog(false)}
+        onLeave={() => {
+          setShowLeaveDialog(false);
+          setShowAnswer(false);
+          setShowWinScreen(false);
+          setShowEliminationReveal(false);
+          actions.resetGame();
+          navigate("/");
+        }}
+      />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-4 py-6 pb-[calc(env(safe-area-inset-bottom,0)+6.5rem)] sm:px-6 sm:py-8 sm:pb-8">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col px-4 py-5 pb-[calc(env(safe-area-inset-bottom,0)+2rem)] sm:px-6 sm:py-7 sm:pb-7">
         <section className="mx-auto w-full max-w-4xl text-center text-white">
           <AnimatePresence mode="wait">
             <motion.div
@@ -179,6 +178,11 @@ export default function ResultPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
+              <AppLogo
+                animated
+                className="mx-auto mb-4 w-[6.5rem] sm:w-[7.5rem] md:w-[8.5rem]"
+                imageClassName="block w-full rounded-[1.45rem] border border-white/35 shadow-[0_18px_44px_rgba(24,12,62,0.28)]"
+              />
               <p className="text-stroke-title text-lg font-black uppercase sm:text-4xl md:text-5xl">
                 {isDiscussionPhase
                   ? "Discuss And Find The Imposter"
@@ -347,13 +351,13 @@ export default function ResultPage() {
                         className="rounded-[1.3rem] border border-amber-200/70 bg-gradient-to-r from-amber-100 via-white to-orange-100 px-4 py-3 shadow-[0_0_28px_rgba(251,191,36,0.28)]"
                       >
                         <p className="text-xs font-black uppercase tracking-[0.3em] text-[#9a6b1d]">Discussion Starter</p>
-                        <motion.p
-                          animate={{ opacity: [0.9, 1, 0.9], scale: [1, 1.02, 1] }}
-                          transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                          className="mt-2 font-display text-2xl font-black uppercase text-[#7a3d06] sm:text-3xl"
-                        >
-                          {discussionStarter.name}
-                        </motion.p>
+                      <motion.p
+                        animate={{ opacity: [0.95, 1, 0.95] }}
+                        transition={{ duration: 1.2, repeat: 2, ease: "easeInOut" }}
+                        className="mt-2 font-display text-2xl font-black uppercase text-[#7a3d06] sm:text-3xl"
+                      >
+                        {discussionStarter.name}
+                      </motion.p>
                       </motion.div>
                     ) : null}
                     <p>Give clues without saying the exact word.</p>
@@ -361,7 +365,7 @@ export default function ResultPage() {
                       Discussion starts with{" "}
                       <motion.span
                         animate={discussionStarter ? { opacity: [0.85, 1, 0.85] } : { opacity: 1 }}
-                        transition={{ duration: 1.6, repeat: discussionStarter ? Number.POSITIVE_INFINITY : 0, ease: "easeInOut" }}
+                        transition={{ duration: 1.1, repeat: discussionStarter ? 2 : 0, ease: "easeInOut" }}
                         className="font-black uppercase text-[#7a3d06]"
                       >
                         {discussionStarter?.name ?? "a random player"}
@@ -398,7 +402,7 @@ export default function ResultPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0)+0.75rem)] z-20 flex flex-col gap-3 rounded-[1.6rem] bg-white/10 p-2 backdrop-blur-md sm:static sm:flex-row sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-0">
+            <div className="flex flex-col gap-3 sm:flex-row">
               {isDiscussionPhase ? (
                 <>
                   <Button
@@ -467,6 +471,7 @@ export default function ResultPage() {
       <Modal
         isOpen={Boolean(selectedPlayerData) && isEliminationPhase && !isEliminating && !showEliminationReveal}
         title="Confirm Elimination"
+        compactMobile
         footer={
           <>
             <Button type="button" variant="secondary" onClick={actions.clearSelectedPlayer}>
@@ -528,6 +533,7 @@ export default function ResultPage() {
       <Modal
         isOpen={showAnswer}
         title="Round Answer"
+        fitMobileScreen
         footer={
           <>
             <Button
@@ -554,25 +560,25 @@ export default function ResultPage() {
           <PostRevealScreen primaryWord={state.word} secondaryWord={state.altWord} />
         ) : (
           <>
-            <div className={`rounded-[1.75rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-5 text-white shadow-[0_18px_38px_rgba(48,20,84,0.22)]`}>
-              <p className="text-sm font-black uppercase tracking-[0.3em] text-white/90">
+            <div className={`rounded-[1.35rem] bg-gradient-to-br ${meta.selectedCategory.accent} p-4 text-white shadow-[0_18px_38px_rgba(48,20,84,0.22)]`}>
+              <p className="text-[0.7rem] font-black uppercase tracking-[0.24em] text-white/90">
                 {state.altWord ? "Primary Word" : "Secret Word"}
               </p>
-              <p className="mt-3 w-full text-center font-display text-5xl font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
+              <p className="mt-2 w-full text-center font-display text-[2.6rem] font-black leading-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)] sm:text-6xl">
                 {state.word}
               </p>
             </div>
             {state.altWord ? (
-              <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
-                <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Chaos Alternate Word</p>
-                <p className="mt-3 w-full text-center font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
+              <div className="rounded-[1.35rem] border border-[#d9c9ec] bg-white p-4 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
+                <p className="text-[0.7rem] font-black uppercase tracking-[0.24em] text-[#6f4f92]">Chaos Alternate Word</p>
+                <p className="mt-2 w-full text-center font-display text-[2.2rem] font-black uppercase text-[#24195f] sm:text-5xl">{state.altWord}</p>
               </div>
             ) : null}
           </>
         )}
-        <div className="rounded-[1.75rem] border border-[#d9c9ec] bg-white p-5 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
-          <p className="text-sm font-black uppercase tracking-[0.3em] text-[#6f4f92]">Imposter</p>
-          <p className="mt-3 w-full text-center font-display text-4xl font-black uppercase text-[#24195f] sm:text-5xl">
+        <div className="rounded-[1.35rem] border border-[#d9c9ec] bg-white p-4 shadow-[0_16px_34px_rgba(77,42,120,0.12)]">
+          <p className="text-[0.7rem] font-black uppercase tracking-[0.24em] text-[#6f4f92]">Imposter</p>
+          <p className="mt-2 w-full text-center font-display text-[2.2rem] font-black uppercase text-[#24195f] sm:text-5xl">
             {imposterNames.join(", ")}
           </p>
         </div>

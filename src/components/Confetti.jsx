@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const confettiBits = Array.from({ length: 28 }, (_, index) => ({
+const confettiBits = Array.from({ length: 10 }, (_, index) => ({
   id: index,
   left: 42 + ((index % 7) - 3) * 6,
   delay: index * 0.05,
@@ -31,10 +31,9 @@ export default function Confetti() {
             opacity: [0, 1, 1, 0],
           }}
           transition={{
-            duration: bit.duration,
+            duration: bit.duration - 0.5,
             delay: 0.35 + bit.delay,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatDelay: 1.2,
+            repeat: 0,
             ease: "easeOut",
           }}
         />

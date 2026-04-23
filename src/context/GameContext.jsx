@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import {
   createPlayer,
   eliminatePlayer as eliminatePlayerFromGame,
@@ -46,7 +46,7 @@ const initialState = {
 export function GameProvider({ children }) {
   const [state, setState] = useState(initialState);
 
-  const addPlayer = (name) => {
+  const addPlayer = useCallback((name) => {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -57,9 +57,9 @@ export function GameProvider({ children }) {
       ...currentState,
       players: [...currentState.players, createPlayer(trimmedName)],
     }));
-  };
+  }, []);
 
-  const removePlayer = (playerId) => {
+  const removePlayer = useCallback((playerId) => {
     setState((currentState) => ({
       ...currentState,
       players: currentState.players.filter((player) => player.id !== playerId),
@@ -68,45 +68,53 @@ export function GameProvider({ children }) {
         getAvailableImposterOptions(currentState.players.length - 1).slice(-1)[0] ?? 1,
       ),
     }));
-  };
+  }, []);
 
-  const updateCategory = (category) => {
+  const reorderPlayers = useCallback((players) => {
+    setState((currentState) => ({
+      ...currentState,
+      players,
+      currentPlayerIndex: Math.min(currentState.currentPlayerIndex, Math.max(players.length - 1, 0)),
+    }));
+  }, []);
+
+  const updateCategory = useCallback((category) => {
     setState((currentState) => ({
       ...currentState,
       category,
     }));
-  };
+  }, []);
 
-  const updateMode = (mode) => {
+  const updateMode = useCallback((mode) => {
     setState((currentState) => ({
       ...currentState,
       mode,
       imposterCount: mode === GAME_MODES.CHAOS || mode === GAME_MODES.DOUBLE_WORD ? 1 : currentState.imposterCount,
     }));
-  };
+  }, []);
 
-  const updateImposterCount = (imposterCount) => {
+  const updateImposterCount = useCallback((imposterCount) => {
     setState((currentState) => ({
       ...currentState,
       imposterCount,
     }));
-  };
+  }, []);
 
-  const toggleTimer = () => {
+  const toggleTimer = useCallback(() => {
     setState((currentState) => ({
       ...currentState,
       timerEnabled: !currentState.timerEnabled,
     }));
-  };
+  }, []);
 
-  const updateTimerSeconds = (timerSeconds) => {
+  const updateTimerSeconds = useCallback((timerSeconds) => {
     setState((currentState) => ({
       ...currentState,
       timerSeconds,
     }));
-  };
+  }, []);
 
-  const startRound = () => {
+  const startRound = useCallback(() => {
     if (state.players.length < 3) {
       return false;
     }
@@ -118,16 +126,16 @@ export function GameProvider({ children }) {
     });
 
     return true;
-  };
+  }, [state.players.length]);
 
-  const nextPlayer = () => {
+  const nextPlayer = useCallback(() => {
     setState((currentState) => ({
       ...currentState,
       currentPlayerIndex: getNextPlayerIndex(currentState.currentPlayerIndex, currentState.players.length),
     }));
-  };
+  }, []);
 
-  const beginDiscussion = () => {
+  const beginDiscussion = useCallback(() => {
     setState((currentState) => {
       const randomStarter = getRandomAlivePlayer(currentState.players) ?? currentState.players[0] ?? null;
 
@@ -141,9 +149,9 @@ export function GameProvider({ children }) {
         eliminationResult: null,
       };
     });
-  };
+  }, []);
 
-  const startElimination = () => {
+  const startElimination = useCallback(() => {
     setState((currentState) => ({
       ...currentState,
       phase: GAME_PHASES.ELIMINATION,
@@ -151,23 +159,23 @@ export function GameProvider({ children }) {
       eliminationTargetId: null,
       eliminationResult: null,
     }));
-  };
+  }, []);
 
-  const selectPlayer = (playerId) => {
+  const selectPlayer = useCallback((playerId) => {
     setState((currentState) => ({
       ...currentState,
       selectedPlayer: playerId,
     }));
-  };
+  }, []);
 
-  const clearSelectedPlayer = () => {
+  const clearSelectedPlayer = useCallback(() => {
     setState((currentState) => ({
       ...currentState,
       selectedPlayer: null,
     }));
-  };
+  }, []);
 
-  const eliminateSelectedPlayer = () => {
+  const eliminateSelectedPlayer = useCallback(() => {
     setState((currentState) => {
       if (!currentState.selectedPlayer) {
         return currentState;
@@ -198,9 +206,9 @@ export function GameProvider({ children }) {
         phase: endState ? GAME_PHASES.RESULT : GAME_PHASES.ELIMINATION,
       };
     });
-  };
+  }, []);
 
-  const acknowledgeElimination = () => {
+  const acknowledgeElimination = useCallback(() => {
     setState((currentState) => {
       if (currentState.winner) {
         return currentState;
@@ -215,9 +223,9 @@ export function GameProvider({ children }) {
         discussionStarterId: currentState.discussionStarterId ?? getRandomAlivePlayer(currentState.players)?.id ?? null,
       };
     });
-  };
+  }, []);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setState((currentState) => ({
       ...initialState,
       players: currentState.players.map((player) => ({
@@ -234,7 +242,7 @@ export function GameProvider({ children }) {
       timerEnabled: currentState.timerEnabled,
       timerSeconds: currentState.timerSeconds,
     }));
-  };
+  }, []);
 
   const currentPlayer = useMemo(() => state.players[state.currentPlayerIndex] ?? null, [state.currentPlayerIndex, state.players]);
   const alivePlayers = useMemo(() => getAlivePlayers(state.players), [state.players]);
@@ -245,13 +253,17 @@ export function GameProvider({ children }) {
   const selectedCategory = useMemo(() => getCategoryDetail(state.category), [state.category]);
   const selectedWordPreview = useMemo(() => getRandomWord(state.category), [state.category]);
 
-  const value = {
-    state: {
+  const providerState = useMemo(
+    () => ({
       ...state,
       currentPlayer,
       alivePlayers,
-    },
-    meta: {
+    }),
+    [alivePlayers, currentPlayer, state],
+  );
+
+  const meta = useMemo(
+    () => ({
       availableImposterOptions,
       selectedCategory,
       selectedWordPreview,
@@ -259,10 +271,15 @@ export function GameProvider({ children }) {
       endState: checkGameEnd(state.players),
       modeSummary: getModeSummary(state.mode, state),
       modeHintLabel: getModeHintLabel(state.mode),
-    },
-    actions: {
+    }),
+    [availableImposterOptions, selectedCategory, selectedWordPreview, state],
+  );
+
+  const actions = useMemo(
+    () => ({
       addPlayer,
       removePlayer,
+      reorderPlayers,
       updateCategory,
       updateMode,
       updateImposterCount,
@@ -277,8 +294,36 @@ export function GameProvider({ children }) {
       eliminateSelectedPlayer,
       acknowledgeElimination,
       resetGame,
-    },
-  };
+    }),
+    [
+      acknowledgeElimination,
+      addPlayer,
+      beginDiscussion,
+      clearSelectedPlayer,
+      eliminateSelectedPlayer,
+      nextPlayer,
+      removePlayer,
+      reorderPlayers,
+      resetGame,
+      selectPlayer,
+      startElimination,
+      startRound,
+      toggleTimer,
+      updateCategory,
+      updateImposterCount,
+      updateMode,
+      updateTimerSeconds,
+    ],
+  );
+
+  const value = useMemo(
+    () => ({
+      state: providerState,
+      meta,
+      actions,
+    }),
+    [actions, meta, providerState],
+  );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

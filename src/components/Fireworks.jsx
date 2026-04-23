@@ -2,11 +2,10 @@ import { motion } from "framer-motion";
 
 const bursts = [
   { id: 1, top: "20%", left: "22%", color: "#ff7f50", delay: 0.2 },
-  { id: 2, top: "26%", left: "76%", color: "#f472b6", delay: 0.9 },
-  { id: 3, top: "16%", left: "56%", color: "#38bdf8", delay: 1.5 },
+  { id: 2, top: "24%", left: "74%", color: "#f472b6", delay: 0.9 },
 ];
 
-const rays = Array.from({ length: 10 }, (_, index) => index);
+const rays = Array.from({ length: 8 }, (_, index) => index);
 
 export default function Fireworks() {
   return (
@@ -19,10 +18,9 @@ export default function Fireworks() {
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: [0, 1, 0], scale: [0, 1.1, 1.6] }}
           transition={{
-            duration: 1.4,
+            duration: 1.1,
             delay: burst.delay,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatDelay: 2.2,
+            repeat: 0,
             ease: "easeOut",
           }}
         >

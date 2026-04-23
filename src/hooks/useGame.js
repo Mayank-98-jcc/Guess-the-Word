@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { GameContext } from "../context/GameContext";
 
@@ -10,8 +10,11 @@ export function useGame() {
     throw new Error("useGame must be used inside GameProvider");
   }
 
-  return {
-    ...context,
-    navigate,
-  };
+  return useMemo(
+    () => ({
+      ...context,
+      navigate,
+    }),
+    [context, navigate],
+  );
 }

@@ -57,11 +57,14 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
       whileTap={{ scale: isRevealed ? 1 : 0.97 }}
     >
       <motion.div
-        animate={{ rotateY: isRevealed ? 180 : 0, scale: isRevealed && !shouldSimplifyMotion ? 1.01 : 1 }}
+        animate={{
+          rotateY: isRevealed && !shouldSimplifyMotion ? 180 : 0,
+          scale: isRevealed && !shouldSimplifyMotion ? 1.01 : 1,
+        }}
         transition={{ duration: shouldSimplifyMotion ? 0.56 : 0.62, ease: "easeInOut" }}
         className="relative h-full w-full transform-gpu [transform-style:preserve-3d] will-change-transform"
       >
-        <div className="card-face absolute inset-0 p-2">
+        <div className={`card-face absolute inset-0 p-2 ${shouldSimplifyMotion && isRevealed ? "hidden" : ""}`}>
           <motion.div
             className="reveal-card-shell h-full w-full p-3"
             animate={
@@ -95,7 +98,13 @@ function RevealCard({ player, word, hint, hintLabel, mode, chaosVariant, isRevea
           </motion.div>
         </div>
 
-        <div className={`card-face card-face-back absolute inset-0 p-2 ${isImposter ? "text-[#d82f7d]" : "text-[#2c216d]"}`}>
+        <div
+          className={`card-face absolute inset-0 p-2 ${
+            shouldSimplifyMotion ? "" : "card-face-back"
+          } ${shouldSimplifyMotion && !isRevealed ? "hidden" : ""} ${
+            isImposter ? "text-[#d82f7d]" : "text-[#2c216d]"
+          }`}
+        >
           <div className="reveal-card-shell h-full w-full p-3">
             <div className="panel-sheen" />
             <div className={`reveal-card-inner flex h-full w-full flex-col items-center justify-center px-6 text-center ${isChaosMode ? "chaos-shell" : ""} sm:px-8`}>

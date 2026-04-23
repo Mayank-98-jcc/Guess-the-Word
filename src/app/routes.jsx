@@ -1,9 +1,15 @@
 import { lazy } from "react";
 import { Navigate, useLocation, useRoutes } from "react-router-dom";
 
-const SetupPage = lazy(() => import("../features/setup/SetupPage"));
-const RevealPage = lazy(() => import("../features/reveal/RevealPage"));
-const ResultPage = lazy(() => import("../features/result/ResultPage"));
+export const routeModules = {
+  setup: () => import("../features/setup/SetupPage"),
+  reveal: () => import("../features/reveal/RevealPage"),
+  result: () => import("../features/result/ResultPage"),
+};
+
+const SetupPage = lazy(routeModules.setup);
+const RevealPage = lazy(routeModules.reveal);
+const ResultPage = lazy(routeModules.result);
 
 export default function AppRoutes() {
   const location = useLocation();

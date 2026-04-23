@@ -6,12 +6,13 @@ export default function AnimatedOverlay({
   children,
   opacity = 0.85,
   blur = "12px",
+  allowScroll = true,
 }) {
   return (
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          className={`fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto ${className}`}
+          className={`hide-scrollbar fixed inset-0 z-[80] overflow-x-hidden ${allowScroll ? "overflow-y-auto" : "overflow-y-hidden"} ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity }}
           exit={{ opacity: 0 }}

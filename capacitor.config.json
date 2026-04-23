@@ -1,5 +1,5 @@
 {
   "appId": "com.imposter.app",
-  "appName": "imposter-who?",
-  "webDir": "dist"
+  "appName": "imposter-who",
+  "webDir": "build"
 }

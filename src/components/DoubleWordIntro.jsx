@@ -14,7 +14,7 @@ export default function DoubleWordIntro({ isOpen, onContinue }) {
           <motion.div
             className="pointer-events-none absolute inset-0 bg-white/10"
             animate={{ opacity: [0.06, 0.22, 0.08] }}
-            transition={{ duration: 0.45, repeat: 2, ease: "easeOut" }}
+            transition={{ duration: 0.36, repeat: 1, ease: "easeOut" }}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -26,15 +26,15 @@ export default function DoubleWordIntro({ isOpen, onContinue }) {
             <div className="rounded-[2rem] border border-white/20 bg-[linear-gradient(145deg,rgba(255,255,255,0.16),rgba(255,255,255,0.06))] px-6 py-10 sm:px-10 sm:py-12">
               <motion.p
                 className="text-sm font-black uppercase tracking-[0.48em] text-orange-100/90 sm:text-base"
-                animate={{ letterSpacing: ["0.42em", "0.5em", "0.42em"] }}
-                transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                animate={{ opacity: [0.78, 1, 0.84], y: [0, -1, 0] }}
+                transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
               >
                 Twist Activated
               </motion.p>
               <motion.h2
                 className="mt-5 font-display text-5xl font-black uppercase leading-[0.86] sm:text-7xl"
-                animate={{ textShadow: ["0 0 18px rgba(255,255,255,0.16)", "0 0 40px rgba(255,205,113,0.35)", "0 0 18px rgba(255,255,255,0.16)"] }}
-                transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                animate={{ opacity: [0.92, 1, 0.94], scale: [1, 1.01, 1] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
               >
                 Double
                 <span className="block">Word Mode</span>
